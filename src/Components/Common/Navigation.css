@@ -1,0 +1,26 @@
+.main-navigation{
+    position: fixed;
+    top: 0;
+    left: 0;
+    display: flex;
+    flex-flow: row wrap;
+    justify-content: center;
+    align-items: center;
+    background-color: rgb(199, 199, 199);
+    width: 100%;
+    opacity: 70%;
+}
+.navigation-link{
+    display: inline-block;
+    flex: 1;
+    padding: 10px;
+    margin-left: 2px;
+    margin-right: 2px;
+    background-color: grey;
+    text-align:center;
+    color: white;
+}
+.navigation-link:hover{
+    cursor: pointer;
+    background-color: rgb(68, 68, 68);
+}

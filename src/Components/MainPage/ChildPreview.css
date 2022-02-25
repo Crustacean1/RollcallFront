@@ -1,0 +1,26 @@
+.child-preview{
+    width: 100%;
+    max-height: 50vh;
+    background-color: rgb(132, 165, 132);
+}
+.child-preview table{
+    width: 100%;
+    border-collapse:collapse;
+}
+.child-preview table td{
+    padding: 10px;
+    margin: 2px;
+}
+
+.child-preview table tbody tr{
+    background-color: rgb(110, 133, 110);
+    text-align: center;
+}
+.child-preview h3{
+    text-align: center;
+}
+
+.child-preview table tbody tr:hover{
+    cursor: pointer;
+    background-color: rgb(95, 134, 95)
+}

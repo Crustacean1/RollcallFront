@@ -1,0 +1,30 @@
+.main-component{
+    width: 100%;
+    min-height: 100vh;
+    display: flex;
+    flex-flow: column wrap;
+    justify-content: space-around;
+    align-items: center; 
+}
+.login-panel{
+    display: flex;
+    flex-flow: column wrap;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+    background-color: green;
+    border-radius: 5px;
+}
+.login-field{
+    margin: 5px;
+    padding: 5px;
+}
+.login-field *{
+    margin: 5px;
+}
+.login-button{
+    font-size: 110%;
+}
+.login-button:hover{
+    cursor:pointer;
+}

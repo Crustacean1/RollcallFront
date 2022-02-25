@@ -1,25 +1,31 @@
-import React from 'react';
-import logo from './logo.svg';
+import { useState } from 'react';
 import './App.css';
+import {
+  BrowserRouter as Router,
+  Route, Routes
+} from 'react-router-dom';
+
+import LoginPage from './Components/LoginPage/LoginPage';
+import MainPage from './Components/MainPage/MainPage';
+import ChildPage from './Components/ChildPage/ChildPage';
+import GroupPage from './Components/GroupPage/GroupPage';
+import Navigation from './Components/Common/Navigation';
 
 function App() {
+  let [token, setToken] = useState<string>("");
+  var navig = <Navigation nav={[
+    { "name": "Obecność", "address": "/" },
+    { "name": "Dzieci", "address": "/children" },
+    { "name": "Grupy", "address": "/groups" }]} />
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <Router>
+      <Routes>
+        <Route path="/login" element={<LoginPage setToken={setToken} />} />
+        <Route path="/" element={<MainPage nav={navig} />} />
+        <Route path="/groups" element={<GroupPage nav={navig} />} />
+        <Route path="/children" element={<ChildPage nav={navig} />} />
+      </Routes>
+    </Router>
   );
 }
 

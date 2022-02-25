@@ -1,0 +1,22 @@
+.loading{
+    width: 100%;
+    height: 100%;
+}
+.spinner{
+    animation: spinning;
+    animation-iteration-count: infinite;
+    animation-timing-function: linear;
+    animation-duration: 1s;
+    background-image: url('../../../public/images/loadingrec.png');
+    background-size: contain;
+    margin: auto;
+}
+
+@keyframes spinning{
+    0%{
+        transform: rotate(0deg);
+    }
+    100%{
+        transform: rotate(359deg);
+    }
+}

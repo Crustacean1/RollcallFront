@@ -1,0 +1,25 @@
+.group-preview{
+    width: 100%;
+    background-color: rgb(185, 144, 144);
+    max-height: 20vh;
+}
+.group-preview table{
+    width: 100%;
+}
+.group-preview table tbody tr{
+    text-align: center;
+    background-color: rgb(187, 104, 104);
+}
+
+.group-preview table td{
+    padding: 10px;
+}
+
+.group-preview h3{
+    text-align:center;
+}
+
+.group-preview table tbody tr:hover{
+    background-color:rgb(177, 77, 77);
+    cursor: pointer;
+}
