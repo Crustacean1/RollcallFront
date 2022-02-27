@@ -7,7 +7,6 @@ import { JWToken } from '../../Api/ApiTypes';
 import { saveTokenToStorage } from '../Common/Session';
 
 interface LoginPageProps {
-    setToken: (token: string) => void;
 }
 interface FieldProps {
     setValue: (value: string) => void;
@@ -32,7 +31,6 @@ function LoginPage(props: LoginPageProps) {
     let tryLogin = () => {
         apiHandler.tryLogin(login, password).then(
             (value: JWToken) => {
-                props.setToken(value.token);
                 saveTokenToStorage(value.token);
                 navigate("/");
             },

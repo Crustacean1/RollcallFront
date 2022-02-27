@@ -1,6 +1,6 @@
 .child-preview{
     width: 100%;
-    max-height: 50vh;
+    flex:5;
     background-color: rgb(132, 165, 132);
 }
 .child-preview table{

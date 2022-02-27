@@ -1,0 +1,13 @@
+.data-panel{
+    background-color: rgb(110, 216, 248);
+    width:100%;
+    flex: 2;
+    display: flex;
+    flex-flow: column;
+    justify-content: space-around;
+    align-items: center;
+}
+.data-panel h2{
+    text-align: center;
+    width: 100%;
+}

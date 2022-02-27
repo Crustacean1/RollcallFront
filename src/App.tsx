@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import './App.css';
 import {
   BrowserRouter as Router,
@@ -12,7 +11,6 @@ import GroupPage from './Components/GroupPage/GroupPage';
 import Navigation from './Components/Common/Navigation';
 
 function App() {
-  let [token, setToken] = useState<string>("");
   var navig = <Navigation nav={[
     { "name": "Obecność", "address": "/" },
     { "name": "Dzieci", "address": "/children" },
@@ -20,7 +18,7 @@ function App() {
   return (
     <Router>
       <Routes>
-        <Route path="/login" element={<LoginPage setToken={setToken} />} />
+        <Route path="/login" element={<LoginPage/>} />
         <Route path="/" element={<MainPage nav={navig} />} />
         <Route path="/groups" element={<GroupPage nav={navig} />} />
         <Route path="/children" element={<ChildPage nav={navig} />} />

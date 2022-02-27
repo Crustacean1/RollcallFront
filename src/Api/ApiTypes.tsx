@@ -1,30 +1,34 @@
-interface Attendance {
+interface AttendanceSummary {
     breakfast: number;
     dinner: number;
     desert: number;
 }
-interface Mask {
+
+interface Attendance {
     breakfast: boolean;
     dinner: boolean;
     desert: boolean;
 }
 
-interface AttendanceDto {
-    Year: number;
-    Month: number;
-    Day: number;
-    DailyAttendance: Attendance;
+interface MealDate {
+    year: number;
+    month: number;
+    day: number;
 }
 
-interface MaskDto {
-    Year: number;
-    Month: number;
-    Day: number;
-    DailyMask: Mask;
+interface AttendanceDto {
+    date: MealDate;
+    meals: Attendance;
+}
+
+interface AttendanceSummaryDto {
+    date: MealDate;
+    meals: AttendanceSummary;
 }
 
 interface ChildDto {
     name: string;
+    id: number;
     surname: string;
     groupId: number;
     defaultAttendance: Attendance;
@@ -32,7 +36,13 @@ interface ChildDto {
 
 interface GroupDto {
     name: string;
-    groupId: number;
+    id: number;
+}
+
+interface GroupSummaryDto {
+    name: string,
+    id: number;
+    summary: AttendanceSummary;
 }
 
 interface JWToken {
@@ -64,4 +74,4 @@ function IsChildAttendanceList(object: any): boolean {
 export default IsJWToken;
 export { IsChildAttendanceList };
 
-export type { ChildDto, GroupDto, MaskDto, AttendanceDto, Mask, Attendance, JWToken };
+export type { ChildDto, GroupDto, AttendanceSummary, AttendanceDto, AttendanceSummaryDto, Attendance, JWToken, GroupSummaryDto, MealDate };

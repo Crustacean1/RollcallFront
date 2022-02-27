@@ -1,18 +1,19 @@
 import './MainPreview.css';
 import GroupPreview from './GroupPreview';
 import ChildPreview from './ChildPreview';
-import { PreviewMode } from '../Common/Types';
+import { PreviewMode } from '../../Common/Types';
 
 interface MainPreviewProps {
-    token: string;
+    panelComponent: JSX.Element;
     setMode: (mode: PreviewMode) => void;
     mode: PreviewMode;
 }
 
 function MainPreview(props: MainPreviewProps) {
     return <div className="main-preview">
-        <GroupPreview token={props.token} setMode={props.setMode} />
-        <ChildPreview token={props.token} mode={props.mode} />
+        {props.panelComponent}
+        <GroupPreview setMode={props.setMode} />
+        <ChildPreview setMode={props.setMode} mode={props.mode} />
     </div>
 }
 

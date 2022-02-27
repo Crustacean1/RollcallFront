@@ -1,0 +1,19 @@
+.child-day{
+    min-width: 9vw;
+    min-height: 150px;
+    background-color: rgb(236, 168, 168);
+    border-bottom: 5px solid  rgb(161, 122, 64);
+    margin: 5px;
+    text-align: center;
+}
+.child-day-field{
+    text-align: left;
+    padding-left: 15px;
+    padding-bottom: 10px;
+}
+.child-day-field label{
+    cursor: pointer;
+    min-width: 60%;
+    text-align: left;
+    display:inline-block;
+}
