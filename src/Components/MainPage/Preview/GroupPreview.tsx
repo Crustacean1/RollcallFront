@@ -18,7 +18,7 @@ function GroupPreview(props: GroupPreviewProps) {
         if (!_groups || _groups.length === 0) {
             apiHandler.fetchGroups().then((newGroups) => {
                 var total = [{ "name": "Wszystkie", "id": 0 }];
-                setGroups(newGroups.concat(total));
+                setGroups(total.concat(newGroups));
                 setLoaded(true);
             })
         }
@@ -35,12 +35,14 @@ function GroupPreview(props: GroupPreviewProps) {
 
     return <div className="group-preview">
         <h3>Grupy:</h3>
-        <table>
-            <thead>
-                <tr><th>Nazwa</th></tr>
-            </thead>
-            <Loading condition={_loaded} target={content} loader={<TableLoader size="5vw" />} />
-        </table>
+        <div className="preview-table">
+            <table>
+                <thead>
+                    <tr><th>Nazwa</th></tr>
+                </thead>
+                <Loading condition={_loaded} target={content} loader={<TableLoader size="5vw" />} />
+            </table>
+        </div>
     </div>
 }
 

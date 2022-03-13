@@ -1,0 +1,14 @@
+.calendar-day .day-meal div{
+    margin-right: 4px;
+    margin-left: 4px;
+    margin-top: 1px;
+}
+.calendar-day.disabled-day{
+    background-color: gray;
+}
+.calendar-day{
+    display: flex;
+    flex-flow: column nowrap;
+    justify-content: center;
+    align-items: center;
+}

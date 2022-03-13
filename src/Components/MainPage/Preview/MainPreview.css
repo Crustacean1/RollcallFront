@@ -7,3 +7,15 @@
     flex-flow: column nowrap;
     justify-content: flex-end;
 }
+.child-preview{
+    overflow: hidden;
+    height: 40%;
+}
+.data-preview{
+    overflow: hidden;
+    width: 30%
+}
+.group-preview{
+    overflow: hidden;
+    width: 30%
+}

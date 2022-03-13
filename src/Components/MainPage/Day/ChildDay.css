@@ -1,17 +1,21 @@
-.child-day{
+.calendar-day{
     min-width: 9vw;
     min-height: 150px;
     background-color: rgb(236, 168, 168);
     border-bottom: 5px solid  rgb(161, 122, 64);
     margin: 5px;
     text-align: center;
+    -moz-user-select: none;
+    user-select: none;
 }
-.child-day-field{
+.day-meal{
     text-align: left;
-    padding-left: 15px;
-    padding-bottom: 10px;
+    width: 100%;
+    padding-left: 0.5vw;
+    -moz-user-select: none;
+    user-select: none;
 }
-.child-day-field label{
+.day-meal label{
     cursor: pointer;
     min-width: 60%;
     text-align: left;

@@ -1,7 +1,15 @@
+
 interface AttendanceSummary {
     breakfast: number;
     dinner: number;
     desert: number;
+}
+
+interface AttendanceSummaryDto {
+    meals: AttendanceSummary;
+}
+interface MonthlyAttendanceDto {
+    days: AttendanceDto[];
 }
 
 interface Attendance {
@@ -16,14 +24,20 @@ interface MealDate {
     day: number;
 }
 
-interface AttendanceDto {
-    date: MealDate;
-    meals: Attendance;
+interface MealDto {
+    attendance: number;
+    masked: boolean;
 }
 
-interface AttendanceSummaryDto {
-    date: MealDate;
-    meals: AttendanceSummary;
+interface MealAttendance {
+    name: string;
+    present: boolean;
+}
+
+interface AttendanceDto {
+    breakfast: MealDto;
+    dinner: MealDto;
+    desert: MealDto;
 }
 
 interface ChildDto {
@@ -32,6 +46,7 @@ interface ChildDto {
     surname: string;
     groupId: number;
     defaultAttendance: Attendance;
+    groupName: string;
 }
 
 interface GroupDto {
@@ -40,7 +55,7 @@ interface GroupDto {
 }
 
 interface GroupSummaryDto {
-    name: string,
+    name: string;
     id: number;
     summary: AttendanceSummary;
 }
@@ -49,29 +64,17 @@ interface JWToken {
     token: string;
 }
 
-function IsJWToken(obj: any): boolean {
-    if ("token" in obj && typeof obj["token"] == "string") {
-        return true;
-    }
-    return false;
-}
-function IsChildAttendanceList(object: any): boolean {
-    if (!Array.isArray(object)) {
-        return false;
-    }
-    var areElementsOk = true;
-    object.forEach(
-        (e) => {
-            if ("Year" in e && "Month" in e && "Day" in e && "DailyAttendance" in e) {
-            } else {
-                areElementsOk = false;
-            }
-        }
-    )
-    return areElementsOk;
-}
-
-export default IsJWToken;
-export { IsChildAttendanceList };
-
-export type { ChildDto, GroupDto, AttendanceSummary, AttendanceDto, AttendanceSummaryDto, Attendance, JWToken, GroupSummaryDto, MealDate };
+export type {
+    ChildDto,
+    GroupDto,
+    AttendanceSummary,
+    AttendanceDto,
+    MealDto,
+    Attendance,
+    JWToken,
+    GroupSummaryDto,
+    MealDate,
+    AttendanceSummaryDto,
+    MonthlyAttendanceDto,
+    MealAttendance
+};

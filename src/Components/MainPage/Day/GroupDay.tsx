@@ -1,60 +1,65 @@
-import { useEffect, useState } from 'react';
+import { useState, useEffect } from 'react';
 
 import './GroupDay.css';
-import { Attendance, AttendanceSummary, AttendanceDto, AttendanceSummaryDto } from '../../../Api/ApiTypes';
+import { AttendanceDto, MealAttendance } from '../../../Api/ApiTypes';
 import apiHandler from '../../../Api/Api';
-import { DayProps } from './../Calendar'
+import { AttendanceRequestData, MealProps } from './DayTypes';
+import { Loading, Loader } from "../../Common/Loading";
 
-function fetchGroupAttendance(groupId: number, year: number, month: number): Promise<AttendanceSummaryDto[]> {
-    return apiHandler.fetchGroupAttendance(groupId, year, month + 1);
-}
-function fetchGroupMasks(groupId: number, year: number, month: number): Promise<AttendanceDto[]> {
-    return apiHandler.fetchGroupMasks(groupId, year, month + 1);
+function fetchGroupAttendance(groupId: number, year: number, month: number): Promise<AttendanceDto[]> {
+    return apiHandler.fetchGroupAttendance(groupId, year, month + 1).then(n => n.days);
 }
 
-type MealName = "breakfast" | "dinner" | "desert";
+function setGroupAttendance(requestData: AttendanceRequestData, attendance: MealAttendance): Promise<boolean> {
+    return apiHandler.setGroupAttendance(requestData.target, attendance,
+        requestData.date)
+        .then((result) => {
+            return result.present;
+        });
+}
 
-function GroupDay(props: DayProps) {
-    const dayMap = {
-        "breakfast": "Śniadanie",
-        "dinner": "Obiad",
-        "desert": "Deser"
-    };
+function GroupMeal(props: MealProps) {
+    const mealLabels = { "breakfast": "Śniadanie", "dinner": "Obiad", "desert": "Deser" };
 
+    let [_loading, setLoading] = useState<boolean>(props.attendance.masked);
 
-    let nilAttendance = { "breakfast": 0, "dinner": 0, "desert": 0 };
-    let nilMask = { "breakfast": true, "dinner": true, "desert": true };
-    let defaultLoaded = { "breakfast": false, "dinner": false, "desert": false };
-
-    let [_loaded, setLoaded] = useState<Attendance>(defaultLoaded);
+    let setMasked = (value: boolean) => {
+        let newAttendance = Object.assign({}, props.attendance);
+        newAttendance.masked = value;
+        props.setAttendance(newAttendance);
+    }
 
     useEffect(() => {
-        if (props.masks[props.date.day] !== undefined && props.attendance[props.date.day] !== undefined) {
-            setLoaded(nilMask);
+        let active = true;
+        if (_loading === true) {
+            setGroupAttendance({ target: props.target, date: props.date }, { present: !props.attendance.masked, name: props.name })
+                .then((e) => {
+                    if (active) {
+                        setMasked(e);
+                        setLoading(true);
+                    }
+                })
         }
-    }, [props.masks, props.attendance])
+        return () => { setMasked(props.attendance.masked); active = false; }
+    }, [_loading])
 
-    let mapProperties = (meals: AttendanceSummary) => {
-        let result = [] as JSX.Element[];
-        let id = `group-day-${props.date.day}`;
+    let setNewMask = () => { setLoading(false) }
 
-        let mealNames: MealName[] = ["breakfast", "dinner", "desert"];
-        let mask = props.masks[props.date.day] ?? nilMask;
+    let id = `meal-${props.date.day}-${props.name}`;
+    let checkbox = <input id={id} type="checkbox" checked={props.attendance.masked} onChange={(e) => setNewMask()} />
 
-        for (let name of mealNames) {
-            result.push(<div className="child-day-field">
-                <input id={`${id}-${name}`} type="checkbox" checked={mask[name as MealName]} onChange={() => { }} />
-                <label htmlFor={`${id}-${name}`}>{dayMap[name as MealName]}: </label>
-                <span>{meals[name as MealName]}</span>
-            </div>)
-        }
-        return result;
-    }
-    return <div className="calendar-day child-day">
-        <h4>{props.date.day}</h4>
-        {mapProperties(props.attendance[props.date.day] ?? nilAttendance)}
-    </div>
+    let mealStyle = { "color": props.attendance.masked ? "grey" : "black" };
+
+    return <div className="day-meal">
+        <Loading condition={!_loading} target={checkbox} loader={<Loader size="16px" />} />
+        <label htmlFor={id}>{mealLabels[props.name]}</label>
+        <span className="meal-count" style={mealStyle}>{props.attendance.attendance}</span>
+    </div >
 }
 
-export default GroupDay;
-export { fetchGroupAttendance, fetchGroupMasks };
+let groupMealContext = {
+    fetchAttendance: fetchGroupAttendance,
+    renderMeal: GroupMeal
+}
+
+export default groupMealContext;

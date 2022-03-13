@@ -6,11 +6,13 @@ import Calendar from './Calendar';
 import { PreviewMode } from '../Common/Types';
 import MainPreview from './Preview/MainPreview';
 
-import ChildDay, { fetchChildAttendance, fetchChildMasks } from './Day/ChildDay';
-import GroupDay, { fetchGroupAttendance, fetchGroupMasks } from './Day/GroupDay';
+import childMealContext from './Day/ChildDay';
+import groupMealContext from './Day/GroupDay';
 
 import ChildDataPanel from './DataPanel/ChildDataPanel';
 import GroupDataPanel from './DataPanel/GroupDataPanel';
+
+import { DayContext } from './Day/DayTypes';
 
 function MainPage(props: { nav: JSX.Element }) {
 
@@ -21,20 +23,31 @@ function MainPage(props: { nav: JSX.Element }) {
 
     let now = new Date();
 
+    let defaultContext = {
+        ...groupMealContext,
+        targetId: 0
+    };
+
     let [_mode, setMode] = useState<PreviewMode>({ "type": "Group", "groupId": 0, "childId": 0 });
     let [_selectedDate, setDate] = useState<Date>(getStartingDate(now.getFullYear(), now.getMonth()));
+    let [_context, setContext] = useState<DayContext>(defaultContext);
 
-    let contexts = [{ "fetchMasks": fetchChildMasks, "fetchAttendance": fetchChildAttendance, "dayComponent": ChildDay },
-    { "fetchMasks": fetchGroupMasks, "fetchAttendance": fetchGroupAttendance, "dayComponent": GroupDay }];
+
+    let setGlobalMode = (mode: PreviewMode) => {
+        setContext(mode.type === "Group" ? { ...groupMealContext, targetId: mode.groupId } :
+            { ...childMealContext, targetId: mode.childId });
+
+        setMode(mode);
+    }
 
     return <div className="main-component">
         {props.nav}
         <div className="main-content">
             <MainPreview panelComponent={_mode.type === "Group" ?
                 <GroupDataPanel targetId={_mode.groupId} date={_selectedDate} /> :
-                <ChildDataPanel targetId={_mode.childId} />} setMode={setMode} mode={_mode} />
-            <Calendar targetId={_mode.type === "Child" ? _mode.childId : _mode.groupId}
-                context={contexts[_mode.type === "Group" ? 1 : 0]}
+                <ChildDataPanel targetId={_mode.childId} date={_selectedDate} />}
+                setMode={setGlobalMode} mode={_mode} />
+            <Calendar context={_context}
                 selectedDate={_selectedDate} setDate={setDate} />
         </div>
     </div>

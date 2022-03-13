@@ -12,11 +12,10 @@ interface ChildPreviewProps {
     setMode: (mode: PreviewMode) => void;
 }
 
-function ChildItem(props: { name: string, surname: string, groupName: string, default: Attendance, setMode: () => void }) {
+function ChildItem(props: { name: string, surname: string, default: Attendance, setMode: () => void }) {
     return <tr className="child-row" onClick={props.setMode}>
         <td>{props.name}</td>
         <td>{props.surname}</td>
-        <td>{props.groupName}</td>
         <td>{props.default.breakfast ? "✅" : "❌"}</td>
         <td>{props.default.dinner ? "✅" : "❌"}</td>
         <td>{props.default.desert ? "✅" : "❌"}</td>
@@ -51,16 +50,18 @@ function ChildPreview(props: ChildPreviewProps) {
     let key = 0;
     let content = (<tbody>
         {_children.map((child) => <ChildItem key={++key} name={child.name} surname={child.surname} setMode={() => { selectChild(child.id); }}
-            groupName={child.groupId.toString()} default={child.defaultAttendance} />)}
+            default={child.defaultAttendance} />)}
     </tbody>);
     return (<div className="child-preview">
         <h3>Dzieci:</h3>
-        <table>
-            <thead>
-                <tr><th>Imie</th><th>Nazwisko</th><th>Grupa</th><th>Śn.</th><th>Ob.</th><th>De.</th></tr>
-            </thead>
-            <Loading condition={_loaded} target={content} loader={<TableLoader size="5vw" />} />
-        </table>
+        <div className="preview-table">
+            <table>
+                <thead>
+                    <tr><th>Imie</th><th>Nazwisko</th><th>Śniadanie</th><th>Obiad</th><th>Deser</th></tr>
+                </thead>
+                <Loading condition={_loaded} target={content} loader={<TableLoader size="5vw" />} />
+            </table>
+        </div>
     </div>);
 }
 

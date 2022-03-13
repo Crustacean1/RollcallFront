@@ -1,7 +1,6 @@
 .group-preview{
     width: 100%;
     background-color: rgb(185, 144, 144);
-    height: 20vh;
     flex: 3;
 }
 .group-preview table{
@@ -23,4 +22,10 @@
 .group-preview table tbody tr:hover{
     background-color:rgb(177, 77, 77);
     cursor: pointer;
+}
+
+.preview-table{
+    overflow: scroll;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
 }
