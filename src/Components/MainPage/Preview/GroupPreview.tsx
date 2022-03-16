@@ -2,8 +2,8 @@ import { useState, useEffect } from 'react';
 
 import apiHandler from '../../../Api/Api';
 import { GroupDto } from '../../../Api/ApiTypes';
-import { Loading, TableLoader } from '../../Common/Loading';
 import { PreviewMode } from '../../Common/Types';
+import BasicTable from '../../Common/Table';
 import './GroupPreview.css';
 
 interface GroupPreviewProps {
@@ -27,22 +27,17 @@ function GroupPreview(props: GroupPreviewProps) {
         props.setMode({ "type": "Group", "childId": 0, "groupId": groupId ?? 0 });
     }
 
-    let key = 0;
-    let content = (<tbody>
-        {_groups.map((group) =>
-            <tr key={++key} onClick={() => setGroup(group.id)}><td>{group.name}</td></tr>)}
-    </tbody>)
+    let displayFunc = (group: GroupDto) => (<tr><td onClick={() => setGroup(group.id)}>{group.name}</td></tr>);
 
     return <div className="group-preview">
-        <h3>Grupy:</h3>
-        <div className="preview-table">
-            <table>
-                <thead>
-                    <tr><th>Nazwa</th></tr>
-                </thead>
-                <Loading condition={_loaded} target={content} loader={<TableLoader span={6} size="5vw" />} />
-            </table>
-        </div>
+        <BasicTable
+            headers={["Nazwa groupy"]}
+            source={_groups}
+            loading={!_loaded}
+            height="100%"
+            class="preview-table"
+            displayFunc={displayFunc}
+        />
     </div>
 }
 

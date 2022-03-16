@@ -1,8 +1,7 @@
-.children-list{
+.children-list table{
     border-collapse: collapse;
 }
-table.children-list tbody tr{
-    background-color: rgb(189, 189, 189);
+.children-list table tbody tr{
     margin: 2px;
 }
 .children-list th{
@@ -23,19 +22,10 @@ table.children-list tbody tr{
     cursor: pointer;
     background-color:brown;
 }
-.outer-child-list{
-    height: 50vh;
-    background-color: rgb(206, 205, 205);
-    overflow: scroll;
-    scrollbar-width: none;
-    -ms-overflow-style: none;
-}
 
-.children-list thead th{
-    top: 0px;
-    background-color: grey;
-    position:sticky;
-}
 .children-list input:hover{
     cursor:pointer;
+}
+.children-list{
+    background-color: rgb(107, 161, 107);
 }

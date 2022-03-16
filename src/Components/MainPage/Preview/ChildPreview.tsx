@@ -6,6 +6,7 @@ import { Loading, TableLoader } from '../../Common/Loading';
 import { Attendance } from '../../../Api/ApiTypes';
 import { PreviewMode } from '../../Common/Types';
 import './ChildPreview.css';
+import BasicTable from '../../Common/Table';
 
 interface ChildPreviewProps {
     mode: PreviewMode;
@@ -47,21 +48,15 @@ function ChildPreview(props: ChildPreviewProps) {
         props.setMode({ "type": "Child", "groupId": props.mode.groupId, "childId": childId });
     }
 
-    let key = 0;
-    let content = (<tbody>
-        {_children.map((child) => <ChildItem key={++key} name={child.name} surname={child.surname} setMode={() => { selectChild(child.id); }}
-            default={child.defaultAttendance} />)}
-    </tbody>);
+    let displayFunc = (child: ChildDto) => ChildItem({ name: child.name, surname: child.surname, default: child.defaultAttendance, setMode: () => { selectChild(child.id) } });
+
     return (<div className="child-preview">
-        <h3>Dzieci:</h3>
-        <div className="preview-table">
-            <table>
-                <thead>
-                    <tr><th>Imie</th><th>Nazwisko</th><th>Śniadanie</th><th>Obiad</th><th>Deser</th></tr>
-                </thead>
-                <Loading condition={_loaded} target={content} loader={<TableLoader span={6} size="5vw" />} />
-            </table>
-        </div>
+        <BasicTable source={_children}
+            headers={["Imię", "Nazwisko", "Śniadanie", "Obiad", "Deser"]}
+            class="preview-table"
+            height="100%"
+            loading={!_loaded}
+            displayFunc={displayFunc} />
     </div>);
 }
 
