@@ -2,6 +2,7 @@ import './ChildPage.css';
 import { useEffect, useState } from 'react';
 import apiHandler from '../../Api/Api';
 import { MealAttendance, GroupDto } from '../../Api/ApiTypes';
+import ChildrenList from './ChildrenList';
 
 type MealName = "breakfast" | "dinner" | "desert";
 
@@ -13,6 +14,8 @@ function ChildPage(props: { nav: JSX.Element }) {
     let [_currentName, setName] = useState("Karol");
     let [_currentSurname, setSurname] = useState("Wojtyła");
     let [_currentAttendance, setAttendance] = useState<MealAttendance[]>([]);
+
+    let [_newChildId, setNewId] = useState(0);
 
     useEffect(() => {
         let active = true;
@@ -49,14 +52,18 @@ function ChildPage(props: { nav: JSX.Element }) {
             dto[meal.name as MealName] = meal.present;
         }
         apiHandler.addChild(_currentName, _currentSurname, _currentGroupId, dto)
+            .then((success) => {
+                setNewId(_newChildId + 1);
+            })
     }
 
     return <div className="main-component">
         {props.nav}
+        <ChildrenList newest={_newChildId} />
         <h1>Dodaj dzieciaka:</h1>
         <div className="child-form">
-            <input type="text" value={_currentName} onChange={(e) => setName(e.currentTarget.value)} />
-            <input type="text" value={_currentSurname} onChange={(e) => setSurname(e.currentTarget.value)} />
+            <input className="child-name" type="text" value={_currentName} onChange={(e) => setName(e.currentTarget.value)} />
+            <input className="child-surname" type="text" value={_currentSurname} onChange={(e) => setSurname(e.currentTarget.value)} />
             <select onChange={e => setCurrentId(parseInt(e.currentTarget.value))}>
                 {_groups.map(g => <option value={g.id}>{g.name}</option>)}
             </select>

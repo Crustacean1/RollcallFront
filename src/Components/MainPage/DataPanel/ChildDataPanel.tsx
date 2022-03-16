@@ -49,13 +49,9 @@ function ChildDataPanel(props: DataPanelProps) {
         <div className="data-month-summary">
             {meals.map((m, i) => <h4 key={i}>{MealPluralLabels[m]}: {_summary[m]}</h4>)}
         </div>
-        <div className="action-panel">
-            <span className="data-panel-action">Wyczyść</span>
-            <span className="data-panel-action">Przedłuż</span>
-        </div>
     </>);
 
-    return <div className="data-panel">
+    return <div className="data-panel child-panel">
         <Loading condition={_childLoaded && _summaryLoaded} target={content} loader={<Loader size="100px" />} />
     </div>
 }

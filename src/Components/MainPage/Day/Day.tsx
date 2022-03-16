@@ -1,49 +1,111 @@
 import './Day.css';
-import { useReducer, useState, useEffect } from 'react';
+import { useState, useCallback } from 'react';
 import { Loading, Loader } from '../../Common/Loading';
-import { MealDto } from '../../../Api/ApiTypes';
-import { DayState, DayProps, MealProps } from './DayTypes';
+import { AttendanceDto, MealAttendance } from '../../../Api/ApiTypes';
+import {
+    MealContext,
+    MealName,
+    MealNames,
+    DayDate,
+    DayInfo,
+    FetchFunction,
+    MealUpdateFunction
+} from './DayTypes';
 
+interface DayProps {
+    context: MealContext;
 
+    targetId: number;
+    date: DayDate;
+    attendance: AttendanceDto;
+}
 
-type MealName = "breakfast" | "dinner" | "desert";
+function ReadAttendance(attendance: AttendanceDto): DayInfo {
+    let info = {
+        "breakfast": { ...attendance.breakfast, name: "breakfast" as MealName, loading: false },
+        "dinner": { ...attendance.dinner, name: "dinner" as MealName, loading: false },
+        "desert": { ...attendance.desert, name: "desert" as MealName, loading: false },
+    };
+    return info;
+}
 
-function UpdateMeal(state: DayState, action: { type: string, prop: DayState, name: MealName, value: MealDto }) {
-    switch (action.type) {
-        case 'update':
-            let newState = Object.assign({}, state);
-            newState[action.name] = action.value;
-            return newState
-        case 'replace':
-            return action.prop;
-        default:
-            throw new Error();
+function CopyDayInfo(info: DayInfo): DayInfo {
+    let newInfo = Object.assign({}, info);
+    for (let name of MealNames) {
+        newInfo[name] = Object.assign({}, info[name]);
     }
+    return newInfo;
+}
+
+function StartLoadingMeals(info: DayInfo): DayInfo {
+    let newInfo = CopyDayInfo(info);
+    for (let meal of MealNames) {
+        newInfo[meal].loading = true;
+    }
+    return newInfo;
+}
+function StartLoadingMeal(info: DayInfo, name: MealName): DayInfo {
+    let newInfo = CopyDayInfo(info);
+    newInfo[name].loading = true;
+    return newInfo;
+}
+
+function SetUpdatedMeals(info: DayInfo, updates: MealAttendance[], updateFunc: MealUpdateFunction): DayInfo {
+    let newInfo = CopyDayInfo(info);
+    for (let meal of updates) {
+        updateFunc(newInfo[meal.name as MealName], meal.present);
+        newInfo[meal.name as MealName].loading = false;
+    }
+    return newInfo;
 }
 
 function Day(props: DayProps) {
-    let [_attendance, setAttendance] = useReducer(UpdateMeal, props.attendance);
 
-    let populateMeals = () => {
-        const mealNames: MealName[] = ["breakfast", "dinner", "desert"];
+    let [_info, setInfo] = useState<DayInfo>(ReadAttendance(props.attendance));
 
+    const updateMealAttendance = useCallback((name: MealName, update: boolean, updateFunc: MealUpdateFunction) => {
+        if (_info[name].loading === true) { return; }
+        setInfo(s => StartLoadingMeal(s, name));
+
+        let updateRequest = [{ name: name, present: update }];
+        props.context.updateAttendance(props.targetId, props.date, updateRequest)
+            .then(updateResponse => {
+                setInfo(s => SetUpdatedMeals(s, updateResponse, updateFunc))
+            })
+    }, [_info, props.context, props.date, props.targetId]);
+
+    const updateEntireAttendance = useCallback((update: boolean, updateFunc: MealUpdateFunction) => {
+        let updateRequest: MealAttendance[] = [];
+        for (let meal of MealNames) {
+            if (_info[meal].loading !== false) { return; }
+            updateRequest.push({ name: meal, present: update });
+        }
+        setInfo(s => StartLoadingMeals(s));
+
+        props.context.updateAttendance(props.targetId, props.date, updateRequest)
+            .then(updateResponse => {
+                setInfo(s => SetUpdatedMeals(s, updateResponse, updateFunc));
+            })
+    }, [])
+
+    let renderMeals = () => {
         let result: JSX.Element[] = [];
 
-        for (let name of mealNames) {
-            let currentMeal = _attendance[name];
-            result.push(<props.renderMeal
-                key={`${name}`}
-                attendance={currentMeal}
-                setAttendance={(a => setAttendance({ type: 'update', prop: props.attendance, 'name': name, 'value': a }))}
-                date={props.date}
-                name={name}
-                target={props.targetId} />);
+        for (let mealName of MealNames) {
+            result.push(<props.context.mealFunc
+                key={`${mealName}`}
+                info={_info[mealName]}
+                updateAttendance={(update: boolean, func: MealUpdateFunction) => updateMealAttendance(mealName, update, func)}
+                date={props.date} />);
         }
         return result;
     }
+
     return <div className="calendar-day">
-        <h4><input type="checkbox" checked={false} readOnly={true} />{props.date.day}</h4>
-        {populateMeals()}
+        {props.context.headerFunc({ date: props.date, info: _info, updateAttendance: updateEntireAttendance })}
+        <div className="meal-container">
+            {renderMeals()}
+        </div>
     </div>
 }
 
@@ -52,18 +114,32 @@ function LoadingDay(props: {}) {
         <Loading condition={false} target={<div></div>} loader={<Loader size="5vw" />} />
     </div>
 }
+
 function DisabledDay(props: {}) {
     return <div className="calendar-day disabled-day">
     </div>
 }
 
-type DayFunction = (props: DayProps) => JSX.Element;
-type MealFunction = (props: MealProps) => JSX.Element;
+type DayFunction = (props: { date: DayDate, attendance: AttendanceDto }) => JSX.Element;
 
-function CreateDay(dayFunc: DayFunction, mealFunc: MealFunction, props: DayProps) {
-    return dayFunc({ ...props, renderMeal: mealFunc });
+function CreateDay(context: MealContext, targetId: number) {
+    return (props: { date: DayDate, attendance: AttendanceDto }) =>
+        Day({
+            ...props,
+            context: context,
+            targetId: targetId,
+        });
 }
 
-export default Day;
+function CreateDayContext(context: MealContext, targetId: number, fetchFunc: FetchFunction) {
+    return {
+        dayFunc: CreateDay(context, targetId),
+        fetchAttendance: fetchFunc
+    }
+}
 
-export { DisabledDay, LoadingDay };
+export default CreateDayContext;
+
+export { Day, DisabledDay, LoadingDay };
+
+export type { DayFunction };

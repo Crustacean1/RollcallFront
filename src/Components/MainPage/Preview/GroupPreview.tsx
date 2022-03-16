@@ -40,7 +40,7 @@ function GroupPreview(props: GroupPreviewProps) {
                 <thead>
                     <tr><th>Nazwa</th></tr>
                 </thead>
-                <Loading condition={_loaded} target={content} loader={<TableLoader size="5vw" />} />
+                <Loading condition={_loaded} target={content} loader={<TableLoader span={6} size="5vw" />} />
             </table>
         </div>
     </div>

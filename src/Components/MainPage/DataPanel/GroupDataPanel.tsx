@@ -56,7 +56,7 @@ function GroupDataPanel(props: DataPanelProps) {
             {meals.map((m, i) => <h4 key={i}> {MealPluralLabels[m]} : {_summary[m]}</h4>)}
         </div>
     </>);
-    return <div className="data-panel">
+    return <div className="data-panel group-panel">
         <Loading condition={_groupLoaded && _summaryLoaded} target={content} loader={<Loader size="100px" />} />
     </div>
 }

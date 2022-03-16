@@ -26,3 +26,6 @@
 .child-form>label:hover, .child-form>input:hover{
     cursor: pointer;
 }
+.child-name, .child-surname{
+    width: 100px;
+}

@@ -25,7 +25,7 @@ interface MealDate {
 }
 
 interface MealDto {
-    attendance: number;
+    present: number;
     masked: boolean;
 }
 

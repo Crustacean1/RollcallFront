@@ -59,7 +59,7 @@ function ChildPreview(props: ChildPreviewProps) {
                 <thead>
                     <tr><th>Imie</th><th>Nazwisko</th><th>Śniadanie</th><th>Obiad</th><th>Deser</th></tr>
                 </thead>
-                <Loading condition={_loaded} target={content} loader={<TableLoader size="5vw" />} />
+                <Loading condition={_loaded} target={content} loader={<TableLoader span={6} size="5vw" />} />
             </table>
         </div>
     </div>);

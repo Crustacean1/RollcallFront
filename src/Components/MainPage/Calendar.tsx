@@ -25,14 +25,14 @@ function Calendar(props: CalendarProps) {
 
         setAttendance([]);
 
-        props.context.fetchAttendance(props.context.targetId, ...unrollDate(props.selectedDate)).then(
+        props.context.fetchAttendance(...unrollDate(props.selectedDate)).then(
             (newAttendance) => {
                 if (isActive && newAttendance) {
                     setAttendance(newAttendance);
                 }
             }, (e) => { console.log(e); });
         return () => { isActive = false }
-    }, [props.context, props.selectedDate, props.context.targetId]);
+    }, [props.context, props.selectedDate]);
 
     let populateCalendar = () => {
         let result = [] as JSX.Element[];
@@ -55,13 +55,11 @@ function Calendar(props: CalendarProps) {
                 continue;
             }
 
-            result.push(<Day key={++i}
-                renderMeal={props.context.renderMeal}
+            result.push(<props.context.dayFunc key={++i}
                 attendance={_attendance[date.getDate() - 1]}
-                targetId={props.context.targetId}
                 date={{
                     year: date.getFullYear(),
-                    month: date.getMonth()+1,
+                    month: date.getMonth() + 1,
                     day: date.getDate()
                 }} />);
         }

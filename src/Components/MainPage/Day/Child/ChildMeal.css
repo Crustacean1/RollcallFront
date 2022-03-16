@@ -9,15 +9,22 @@
     user-select: none;
 }
 .day-meal{
+    margin-left: auto;
+    margin-right: auto;
     text-align: left;
-    width: 100%;
     padding-left: 0.5vw;
     -moz-user-select: none;
     user-select: none;
+}
+.day-meal input[type=checkbox]{
+    transform: scale(1.15);
 }
 .day-meal label{
     cursor: pointer;
     min-width: 60%;
     text-align: left;
     display:inline-block;
+}
+.calendar-day h4>*:hover{
+    cursor: pointer;
 }

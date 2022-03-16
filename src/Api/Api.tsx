@@ -119,12 +119,12 @@ class Api {
             ...this.toStringArray(childId));
     }
 
-    setGroupAttendance(groupId: number, mask: MealAttendance, date: MealDate): Promise<MealAttendance> {
+    setGroupAttendance(groupId: number, mask: MealAttendance[], date: MealDate): Promise<MealAttendance[]> {
         return this.sendRequest("POST", mask, this.token, "attendance", "group",
             ...this.toStringArray(groupId, date.year, date.month, date.day));
     }
 
-    setChildAttendance(childId: number, attendance: MealAttendance, date: MealDate): Promise<MealAttendance> {
+    setChildAttendance(childId: number, attendance: MealAttendance[], date: MealDate): Promise<MealAttendance[]> {
         return this.sendRequest("POST", attendance, this.token, "attendance", "child"
             , ...this.toStringArray(childId, date.year, date.month, date.day));
     }
@@ -135,7 +135,7 @@ class Api {
     addGroup(groupName: string): Promise<GroupDto> {
         return this.sendRequest("POST", { "Name": groupName }, this.token, "group");
     }
-    addChild(name: string, surname: string, groupId: number, attendance: Attendance): Promise<GroupDto> {
+    addChild(name: string, surname: string, groupId: number, attendance: Attendance): Promise<number[]> {
         return this.sendRequest("POST", [{ "Name": name, "Surname": surname, "GroupId": groupId, "DefaultAttendance": attendance }], this.token, "child");
     }
 

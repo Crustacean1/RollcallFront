@@ -1,0 +1,41 @@
+.children-list{
+    border-collapse: collapse;
+}
+table.children-list tbody tr{
+    background-color: rgb(189, 189, 189);
+    margin: 2px;
+}
+.children-list th{
+    padding: 10px;
+}
+.children-list td{
+    padding: 10px;
+    text-align: center;
+}
+.children-list .child-eraser{
+    display: inline-block;
+    background-color: red;
+    width: 20px;
+    height: 20px;
+    border-radius: 5px;
+}
+.child-eraser:hover{
+    cursor: pointer;
+    background-color:brown;
+}
+.outer-child-list{
+    height: 50vh;
+    background-color: rgb(206, 205, 205);
+    overflow: scroll;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+}
+
+.children-list thead th{
+    top: 0px;
+    background-color: grey;
+    position:sticky;
+}
+.children-list input:hover{
+    cursor:pointer;
+}

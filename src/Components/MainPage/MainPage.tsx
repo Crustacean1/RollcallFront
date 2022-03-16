@@ -6,8 +6,11 @@ import Calendar from './Calendar';
 import { PreviewMode } from '../Common/Types';
 import MainPreview from './Preview/MainPreview';
 
-import childMealContext from './Day/ChildDay';
-import groupMealContext from './Day/GroupDay';
+import apiHandler from '../../Api/Api';
+import { getTokenFromStorage } from '../Common/Session';
+
+import CreateChildContext from './Day/Child/ChildContext';
+import CreateGroupContext from './Day/Group/GroupContext';
 
 import ChildDataPanel from './DataPanel/ChildDataPanel';
 import GroupDataPanel from './DataPanel/GroupDataPanel';
@@ -23,22 +26,22 @@ function MainPage(props: { nav: JSX.Element }) {
 
     let now = new Date();
 
-    let defaultContext = {
-        ...groupMealContext,
-        targetId: 0
-    };
-
     let [_mode, setMode] = useState<PreviewMode>({ "type": "Group", "groupId": 0, "childId": 0 });
     let [_selectedDate, setDate] = useState<Date>(getStartingDate(now.getFullYear(), now.getMonth()));
-    let [_context, setContext] = useState<DayContext>(defaultContext);
+    let [_context, setContext] = useState<DayContext>(CreateGroupContext(0));
 
+    useEffect(() => {
+        apiHandler.setToken(getTokenFromStorage());
+    }, []);
 
     let setGlobalMode = (mode: PreviewMode) => {
-        setContext(mode.type === "Group" ? { ...groupMealContext, targetId: mode.groupId } :
-            { ...childMealContext, targetId: mode.childId });
-
         setMode(mode);
     }
+
+    useEffect(() => {
+        setContext(_mode.type === "Group" ? CreateGroupContext(_mode.groupId) :
+            CreateChildContext(_mode.childId));
+    }, [_mode])
 
     return <div className="main-component">
         {props.nav}
