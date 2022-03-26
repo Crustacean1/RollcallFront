@@ -1,4 +1,5 @@
 import { AttendanceDto, MealDate, MealAttendance } from '../../../Api/ApiTypes';
+import { MonthCount } from '../../MainPage/MainPage';
 
 interface AttendanceRequestData {
     target: number;
@@ -65,7 +66,7 @@ export type {
     DayInfo,
     DayDate,
     MealUpdateFunction,
-    FetchFunction
+    FetchFunction,
 };
 
 type MealName = "breakfast" | "dinner" | "desert"

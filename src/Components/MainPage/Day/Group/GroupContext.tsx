@@ -3,7 +3,7 @@ import GroupDayHeader from './GroupHeader';
 import { SetGroupAttendance, FetchGroupAttendance } from './GroupApi';
 
 import { MealContext } from '../DayTypes';
-import CreateDayContext from '../Day';
+import CreateDayContext, { MonthCountUpdate } from '../Day';
 
 const groupMealContext: MealContext = {
     mealFunc: GroupMeal,
@@ -11,10 +11,11 @@ const groupMealContext: MealContext = {
     updateAttendance: SetGroupAttendance
 }
 
-function CreateGroupContext(targetId: number) {
+function CreateGroupContext(targetId: number, updateFunc: MonthCountUpdate) {
     return CreateDayContext(groupMealContext,
         targetId,
-        (year: number, month: number) => FetchGroupAttendance(targetId, year, month));
+        (year: number, month: number) => FetchGroupAttendance(targetId, year, month),
+        updateFunc);
 }
 
 

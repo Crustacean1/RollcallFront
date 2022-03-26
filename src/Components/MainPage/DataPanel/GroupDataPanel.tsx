@@ -6,16 +6,17 @@ import apiHandler from '../../../Api/Api';
 import { GroupDto, AttendanceSummary } from '../../../Api/ApiTypes';
 import { Loading, Loader } from '../../Common/Loading';
 import { MealName, MealPluralLabels } from '../Day/DayTypes';
+import { MonthCount } from '../MainPage';
 
 interface DataPanelProps {
+    setMonthCount: (arg: MonthCount) => void;
+    monthCount: MonthCount;
     targetId: number;
     date: Date;
 }
 
 function GroupDataPanel(props: DataPanelProps) {
-    const defaultSummary = { "breakfast": 0, "dinner": 0, "desert": 0 };
 
-    let [_summary, setSummary] = useState<AttendanceSummary>(defaultSummary);
     let [_group, setGroup] = useState<GroupDto>();
     let [_groupLoaded, setGroupLoaded] = useState(false);
     let [_summaryLoaded, setSummaryLoaded] = useState(false);
@@ -25,21 +26,21 @@ function GroupDataPanel(props: DataPanelProps) {
         setGroupLoaded(false);
 
         var active = true;
+
         apiHandler.fetchGroup(props.targetId)
             .then((groupDto) => {
-                if (active) {
-                    setGroup(groupDto);
-                    setGroupLoaded(true);
-                }
+                if (!active) { return }
+                setGroup(groupDto);
+                setGroupLoaded(true);
             }, (error) => {
                 console.log(error);
             });
+
         apiHandler.fetchGroupSummary(props.targetId, props.date.getFullYear(), props.date.getMonth() + 1)
             .then((summary) => {
-                if (active) {
-                    setSummary(summary.meals);
-                    setSummaryLoaded(true);
-                }
+                if (!active) { return }
+                props.setMonthCount(summary.meals);
+                setSummaryLoaded(true);
             }, (error) => {
                 console.log(error);
             });
@@ -53,7 +54,7 @@ function GroupDataPanel(props: DataPanelProps) {
         <h2>Grupa: {_group?.name}</h2>
         <h3>W tym miesiącu:</h3>
         <div className="data-month-summary">
-            {meals.map((m, i) => <h4 key={i}> {MealPluralLabels[m]} : {_summary[m]}</h4>)}
+            {meals.map((m, i) => <h4 key={i}> {MealPluralLabels[m]} : {props.monthCount[m]}</h4>)}
         </div>
     </>);
     return <div className="data-panel group-panel">

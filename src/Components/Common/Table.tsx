@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState} from 'react';
 import './Table.css';
 import { Loading, TableLoader } from './Loading';
 
@@ -24,13 +24,13 @@ function BasicTable<T>(props: TableProps<T>) {
         if (a < b) {
             return _sortDirection;
         }
-        if (a == b) {
+        if (a === b) {
             return 0;
         }
         return -_sortDirection;
     }
 
-    let body = _sorting == "" ?
+    let body = _sorting === "" ?
         (<tbody>
             {props.source.map(src => props.displayFunc(src))}
         </tbody>) :
@@ -38,14 +38,15 @@ function BasicTable<T>(props: TableProps<T>) {
             {props.source.sort((a, b) => sortString((a as any)[_sorting], (b as any)[_sorting])).map(src => props.displayFunc(src))}
         </tbody>)
     let setSortingColumn = (name: string) => {
-        if(_sorting == name){
+        if(_sorting === name){
             setSortDirection(-_sortDirection);
         }
         else{
             setSorting(name);
+            setSortDirection(-1);
         }
     }
-    let activeHeaderName = _sortDirection == -1 ? "sort-desc" : "sort-asc";
+    let activeHeaderName = _sortDirection === -1 ? "sort-desc" : "sort-asc";
 
     return (<div style={{
         "maxHeight": `${props.height}`,
@@ -55,7 +56,7 @@ function BasicTable<T>(props: TableProps<T>) {
             className={`basic-table`}>
             <thead>
                 < tr >
-                    {props.headers.map(header => header.name != "" ?
+                    {props.headers.map(header => header.name !== "" ?
                         <th onClick={e => setSortingColumn(header.name)} className={"active-header " + (_sorting === header.name ? activeHeaderName : "")}>{header.title}</th> :
                         <th className="active-header">{header.title}</th>)}
                 </ tr>

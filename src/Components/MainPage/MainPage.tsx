@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
 
 import './MainPage.css';
 import Calendar from './Calendar';
@@ -17,6 +16,12 @@ import GroupDataPanel from './DataPanel/GroupDataPanel';
 
 import { DayContext } from './Day/DayTypes';
 
+interface MonthCount {
+    breakfast: number;
+    dinner: number;
+    desert: number;
+}
+
 function MainPage(props: { nav: JSX.Element }) {
 
     let getStartingDate = (year: number, month: number) => {
@@ -28,7 +33,8 @@ function MainPage(props: { nav: JSX.Element }) {
 
     let [_mode, setMode] = useState<PreviewMode>({ "type": "Group", "groupId": 0, "childId": 0 });
     let [_selectedDate, setDate] = useState<Date>(getStartingDate(now.getFullYear(), now.getMonth()));
-    let [_context, setContext] = useState<DayContext>(CreateGroupContext(0));
+    let [_monthCount, setMonthCount] = useState<MonthCount>({ breakfast: 0, dinner: 0, desert: 0 });
+    let [_context, setContext] = useState<DayContext>(CreateGroupContext(0, setMonthCount));
 
     useEffect(() => {
         apiHandler.setToken(getTokenFromStorage());
@@ -39,16 +45,16 @@ function MainPage(props: { nav: JSX.Element }) {
     }
 
     useEffect(() => {
-        setContext(_mode.type === "Group" ? CreateGroupContext(_mode.groupId) :
-            CreateChildContext(_mode.childId));
+        setContext(_mode.type === "Group" ? CreateGroupContext(_mode.groupId, setMonthCount) :
+            CreateChildContext(_mode.childId, setMonthCount));
     }, [_mode])
 
     return <div className="main-component">
         {props.nav}
         <div className="main-content">
             <MainPreview panelComponent={_mode.type === "Group" ?
-                <GroupDataPanel targetId={_mode.groupId} date={_selectedDate} /> :
-                <ChildDataPanel targetId={_mode.childId} date={_selectedDate} />}
+                <GroupDataPanel monthCount={_monthCount} setMonthCount={setMonthCount} targetId={_mode.groupId} date={_selectedDate} /> :
+                <ChildDataPanel monthCount={_monthCount} setMonthCount={setMonthCount} targetId={_mode.childId} date={_selectedDate} />}
                 setMode={setGlobalMode} mode={_mode} />
             <Calendar context={_context}
                 selectedDate={_selectedDate} setDate={setDate} />
@@ -56,4 +62,5 @@ function MainPage(props: { nav: JSX.Element }) {
     </div>
 }
 
+export type { MonthCount };
 export default MainPage;
