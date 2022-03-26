@@ -52,7 +52,12 @@ function ChildPreview(props: ChildPreviewProps) {
 
     return (<div className="child-preview">
         <BasicTable source={_children}
-            headers={["Imię", "Nazwisko", "Śniadanie", "Obiad", "Deser"]}
+            headers={[{ name: "name", title: "Imię" },
+            { name: "surname", title: "Nazwisko" },
+            { name: "", title: "Śniadanie" },
+            { name: "", title: "Obiad" },
+            { name: "", title: "Deser" }]}
+
             class="preview-table"
             height="100%"
             loading={!_loaded}

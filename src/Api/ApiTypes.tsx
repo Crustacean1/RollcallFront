@@ -64,6 +64,13 @@ interface JWToken {
     token: string;
 }
 
+interface ChildAttendanceSummary {
+    name: string;
+    id: number;
+    surname: string;
+    summary: AttendanceSummary;
+}
+
 export type {
     ChildDto,
     GroupDto,
@@ -76,5 +83,6 @@ export type {
     MealDate,
     AttendanceSummaryDto,
     MonthlyAttendanceDto,
-    MealAttendance
+    MealAttendance,
+    ChildAttendanceSummary
 };

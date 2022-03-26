@@ -12,6 +12,7 @@ function GroupMeal(props: GroupMealProps) {
 
     let id = `meal-${props.date.day}-${props.info.name}`;
     let checkbox = <input id={id} type="checkbox" checked={props.info.masked}
+        disabled={props.info.loading}
         onChange={(e) => props.updateAttendance(e.currentTarget.checked,
             (info: MealInfo, update: boolean) => { info.masked = update })} />
 

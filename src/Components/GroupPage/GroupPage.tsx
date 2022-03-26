@@ -34,7 +34,7 @@ function GroupPage(props: { nav: JSX.Element }) {
         {props.nav}
         <h1>Dodaj nową grupe:</h1>
         <BasicTable
-            headers={["Grupa", ""]}
+            headers={[{ name: "name", title: "Grupa" }, { name: "", title: "" }]}
             source={_groups}
             height="30vh"
             loading={_loading}

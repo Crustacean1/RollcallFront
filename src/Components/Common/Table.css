@@ -24,3 +24,17 @@
     text-align: center;
     background-color: rgb(236, 236, 236);
 }
+.basic-table .sort-desc:after{
+    content:"▼";
+    position: absolute;
+}
+.basic-table .sort-asc:after{
+    content:"▲";
+    position: absolute;
+}
+.basic-table .active-header{
+    user-select: none;
+}
+.basic-table .active-header:hover{
+    cursor:pointer;
+}

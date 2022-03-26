@@ -18,8 +18,10 @@ function ChildMeal(props: ChildMealProps) {
 
     let id = `meal-${props.date.day}-${props.info.name}`;
 
-    let isChecked = props.info.present === 1 && props.info.masked === false
-    let isDisabled = props.info.masked === true;
+    let isChecked = props.info.present === 1;
+    let isDisabled = props.info.masked === true || props.info.loading;
+
+    let style = { "color": props.info.masked ? "red" : "black"};
 
     let checkbox = <input id={id} type="checkbox"
         disabled={isDisabled}
@@ -29,7 +31,7 @@ function ChildMeal(props: ChildMealProps) {
 
     return <div className="day-meal">
         <Loading condition={!props.info.loading} target={checkbox} loader={<MiniLoader size="16px" />} />
-        <label htmlFor={id}>{MealLabels[props.info.name]}</label>
+        <label style={style} htmlFor={id}>{MealLabels[props.info.name]}</label>
     </div>
 }
 

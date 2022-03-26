@@ -31,7 +31,7 @@ function GroupPreview(props: GroupPreviewProps) {
 
     return <div className="group-preview">
         <BasicTable
-            headers={["Nazwa groupy"]}
+            headers={[{ name: "", title: "Nazwa groupy" }]}
             source={_groups}
             loading={!_loaded}
             height="100%"
