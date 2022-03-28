@@ -5,7 +5,7 @@ import { Loading, MiniLoader } from "../../../Common/Loading";
 interface GroupMealProps {
     date: DayDate;
     info: MealInfo;
-    updateAttendance: (value: boolean, func: MealUpdateFunction) => void;
+    updateAttendance: (value: boolean) => void;
 }
 
 function GroupMeal(props: GroupMealProps) {
@@ -13,10 +13,9 @@ function GroupMeal(props: GroupMealProps) {
     let id = `meal-${props.date.day}-${props.info.name}`;
     let checkbox = <input id={id} type="checkbox" checked={props.info.masked}
         disabled={props.info.loading}
-        onChange={(e) => props.updateAttendance(e.currentTarget.checked,
-            (info: MealInfo, update: boolean) => { info.masked = update })} />
+        onChange={(e) => props.updateAttendance(e.currentTarget.checked)} />
 
-    let mealStyle = { "color": props.info.masked ? "grey" : "black" };
+    let mealStyle = { "color": props.info.masked ? "grey" : "white" };
 
     return <div className="day-meal">
         <Loading condition={!props.info.loading} target={checkbox} loader={<MiniLoader size="16px" />} />

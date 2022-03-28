@@ -11,7 +11,7 @@ import {
 interface ChildMealProps {
     date: DayDate;
     info: MealInfo;
-    updateAttendance: (update: boolean, func: MealUpdateFunction) => void;
+    updateAttendance: (update: boolean) => void;
 }
 
 function ChildMeal(props: ChildMealProps) {
@@ -21,13 +21,12 @@ function ChildMeal(props: ChildMealProps) {
     let isChecked = props.info.present === 1;
     let isDisabled = props.info.masked === true || props.info.loading;
 
-    let style = { "color": props.info.masked ? "red" : "black"};
+    let style = { "color": props.info.masked ? "red" : "white" };
 
     let checkbox = <input id={id} type="checkbox"
         disabled={isDisabled}
         checked={isChecked}
-        onChange={(e) => props.updateAttendance(e.currentTarget.checked,
-            (info: MealInfo, update: boolean) => { info.present = update ? 1 : 0 })} />
+        onChange={(e) => props.updateAttendance(e.currentTarget.checked)} />
 
     return <div className="day-meal">
         <Loading condition={!props.info.loading} target={checkbox} loader={<MiniLoader size="16px" />} />

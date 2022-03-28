@@ -2,16 +2,17 @@
     position: relative;
     border-collapse: collapse;
     width: 100%;
+    color: white;
 }
 .basic-table-container{
-    background-color: rgb(196, 196, 196);
+    background-color: rgb(54, 54, 54);
     overflow: scroll;
 
     scrollbar-width: none;
     -ms-overflow-style: none;
 }
 .basic-table tbody tr{
-    background-color: rgb(223, 223, 223);
+    background-color: rgb(44, 44, 44);
 }
 .basic-table tbody td{
     padding: 10px;
@@ -20,9 +21,9 @@
 .basic-table thead th{
     top: 0;
     position: sticky;
-    padding: 10px;
+    padding: 15px;
     text-align: center;
-    background-color: rgb(236, 236, 236);
+    background-color: rgb(0, 0, 0);
 }
 .basic-table .sort-desc:after{
     content:"▼";

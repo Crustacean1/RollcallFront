@@ -1,17 +1,18 @@
 import './Day.css';
-import { useState, useCallback, useRef, useEffect } from 'react';
+import { useCallback, useRef, useEffect } from 'react';
 import { Loading, Loader } from '../../Common/Loading';
-import { AttendanceDto, MealAttendance } from '../../../Api/ApiTypes';
+import { AttendanceApi, AttendanceDto, MealAttendance } from '../../../Api/ApiTypes';
 import { MonthCount } from '../../MainPage/MainPage';
+
+import useAttendanceInfo from './AttendanceInfoHook';
 import {
     MealContext,
+    DayContext,
     MealName,
     MealNames,
     DayDate,
     DayInfo,
     MealInfo,
-    FetchFunction,
-    MealUpdateFunction
 } from './DayTypes';
 
 type MonthCountUpdate = (update: (arg: MonthCount) => MonthCount) => void;
@@ -19,6 +20,7 @@ type MonthCountUpdate = (update: (arg: MonthCount) => MonthCount) => void;
 interface DayProps {
     context: MealContext;
     countUpdate: MonthCountUpdate;
+    apiHandler: AttendanceApi;
     targetId: number;
     date: DayDate;
     attendance: AttendanceDto;
@@ -33,43 +35,16 @@ function ReadAttendance(attendance: AttendanceDto): DayInfo {
     return info;
 }
 
-function CopyDayInfo(info: DayInfo): DayInfo {
-    let newInfo = Object.assign({}, info);
-    for (let name of MealNames) {
-        newInfo[name] = Object.assign({}, info[name]);
-    }
-    return newInfo;
-}
-
-function StartLoadingMeals(info: DayInfo): DayInfo {
-    let newInfo = CopyDayInfo(info);
-    for (let meal of MealNames) {
-        newInfo[meal].loading = true;
-    }
-    return newInfo;
-}
-function StartLoadingMeal(info: DayInfo, name: MealName): DayInfo {
-    let newInfo = CopyDayInfo(info);
-    newInfo[name].loading = true;
-    return newInfo;
-}
-
-function SetUpdatedMeals(info: DayInfo, updates: MealAttendance[], updateFunc: MealUpdateFunction): DayInfo {
-    let newInfo = CopyDayInfo(info);
-    for (let meal of updates) {
-        updateFunc(newInfo[meal.name as MealName], meal.present);
-        newInfo[meal.name as MealName].loading = false;
-    }
-    return newInfo;
-}
-
 function getMealChange(a: MealInfo, b: MealInfo) {
     return (a.masked ? 0 : a.present) - (b.masked ? 0 : b.present);
 }
 
 function Day(props: DayProps) {
 
-    let [_info, setInfo] = useState<DayInfo>(ReadAttendance(props.attendance));
+    let callApiUpdate = useCallback((meals: MealAttendance[]) => props.apiHandler.updateAttendance(props.targetId, meals, props.date),
+        [props.apiHandler, props.targetId, props.date]);
+
+    let [_info, updateMeal, updateMeals] = useAttendanceInfo(ReadAttendance(props.attendance), callApiUpdate, props.context.updateData);
 
     const prevInfoRef = useRef<DayInfo>(_info);
 
@@ -77,40 +52,15 @@ function Day(props: DayProps) {
         let isActive = true;
         props.countUpdate(a => {
             return {
-                breakfast: a.breakfast + getMealChange(_info.breakfast,prevInfoRef.current.breakfast),
-                dinner: a.dinner + getMealChange(_info.dinner,prevInfoRef.current.dinner),
-                desert: a.desert + getMealChange(_info.desert,prevInfoRef.current.desert),
+                breakfast: a.breakfast + getMealChange(_info.breakfast, prevInfoRef.current.breakfast),
+                dinner: a.dinner + getMealChange(_info.dinner, prevInfoRef.current.dinner),
+                desert: a.desert + getMealChange(_info.desert, prevInfoRef.current.desert),
             }
         })
         prevInfoRef.current = _info;
         return () => { isActive = false; }
 
     }, [_info])
-
-    const updateMealAttendance = useCallback((name: MealName, update: boolean, updateFunc: MealUpdateFunction) => {
-        if (_info[name].loading === true) { return; }
-        setInfo(s => StartLoadingMeal(s, name));
-
-        let updateRequest = [{ name: name, present: update }];
-        props.context.updateAttendance(props.targetId, props.date, updateRequest)
-            .then(updateResponse => {
-                setInfo(s => SetUpdatedMeals(s, updateResponse, updateFunc))
-            })
-    }, [_info, props.context, props.date, props.targetId]);
-
-    const updateEntireAttendance = useCallback((update: boolean, updateFunc: MealUpdateFunction) => {
-        let updateRequest: MealAttendance[] = [];
-        for (let meal of MealNames) {
-            if (_info[meal].loading !== false) { return; }
-            updateRequest.push({ name: meal, present: update });
-        }
-        setInfo(s => StartLoadingMeals(s));
-
-        props.context.updateAttendance(props.targetId, props.date, updateRequest)
-            .then(updateResponse => {
-                setInfo(s => SetUpdatedMeals(s, updateResponse, updateFunc));
-            })
-    }, [])
 
     let renderMeals = () => {
         let result: JSX.Element[] = [];
@@ -119,47 +69,49 @@ function Day(props: DayProps) {
             result.push(<props.context.mealFunc
                 key={`${mealName}`}
                 info={_info[mealName]}
-                updateAttendance={(update: boolean, func: MealUpdateFunction) => updateMealAttendance(mealName, update, func)}
+                updateAttendance={(update: boolean) => updateMeal(mealName, update)}
                 date={props.date} />);
         }
         return result;
     }
 
     return <div className="calendar-day">
-        {props.context.headerFunc({ date: props.date, info: _info, updateAttendance: updateEntireAttendance })}
+        {props.context.headerFunc({ date: props.date, info: _info, updateAttendance: updateMeals })}
         <div className="meal-container">
             {renderMeals()}
         </div>
     </div>
 }
 
-function LoadingDay(props: {}) {
+function LoadingDay() {
     return <div className="calendar-day">
         <Loading condition={false} target={<div></div>} loader={<Loader size="5vw" />} />
     </div>
 }
 
-function DisabledDay(props: {}) {
+function DisabledDay(props: { date: Date }) {
     return <div className="calendar-day disabled-day">
+        <h4>{props.date.getDate()}</h4>
     </div>
 }
 
 type DayFunction = (props: { date: DayDate, attendance: AttendanceDto }) => JSX.Element;
 
-function CreateDay(context: MealContext, targetId: number, updateFunc: MonthCountUpdate) {
+function CreateDay(context: MealContext, apiHandler: AttendanceApi, targetId: number, updateFunc: MonthCountUpdate) {
     return (props: { date: DayDate, attendance: AttendanceDto }) =>
         Day({
             ...props,
+            apiHandler: apiHandler,
             countUpdate: updateFunc,
             context: context,
             targetId: targetId,
         });
 }
 
-function CreateDayContext(context: MealContext, targetId: number, fetchFunc: FetchFunction, updateFunc: MonthCountUpdate) {
+function CreateDayContext(context: MealContext, targetId: number, apiHandler: AttendanceApi, updateFunc: MonthCountUpdate): DayContext {
     return {
-        dayFunc: CreateDay(context, targetId, updateFunc),
-        fetchAttendance: fetchFunc
+        dayFunc: CreateDay(context, apiHandler, targetId, updateFunc),
+        apiHandler: apiHandler
     }
 }
 

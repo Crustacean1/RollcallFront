@@ -1,0 +1,8 @@
+.group-list-container{
+    background-color: rgb(43, 43, 43);
+    border-radius: 20px;
+    padding: 20px;
+}
+.group-list-table th{
+    z-index: 1;
+}

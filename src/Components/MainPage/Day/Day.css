@@ -4,16 +4,17 @@
     margin-top: 1px;
 }
 .calendar-day.disabled-day{
-    background-color: gray;
+    background-color: rgb(177, 177, 177);
 }
 .calendar-day{
     display: flex;
     flex-flow: column nowrap;
-    justify-content: center;
+    justify-content: space-around;
     align-items: center;
 }
 
 .meal-container{
     width: 100%;
-    
+    font-size: 105%;
+    margin: 5px;
 }

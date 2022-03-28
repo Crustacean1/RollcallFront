@@ -1,5 +1,4 @@
-import { AttendanceDto, MealDate, MealAttendance } from '../../../Api/ApiTypes';
-import { MonthCount } from '../../MainPage/MainPage';
+import { AttendanceApi, AttendanceDto, MealDate, MealAttendance } from '../../../Api/ApiTypes';
 
 interface AttendanceRequestData {
     target: number;
@@ -31,13 +30,13 @@ type MealUpdateFunction = (info: MealInfo, update: boolean) => void;
 interface MealProps {
     date: DayDate;
     info: MealInfo;
-    updateAttendance: (update: boolean, func: MealUpdateFunction) => void;
+    updateAttendance: (update: boolean) => void;
 }
 
 interface HeaderProps {
     date: DayDate;
     info: DayInfo;
-    updateAttendance: (update: boolean, func: MealUpdateFunction) => void;
+    updateAttendance: (update: boolean) => void;
 }
 
 type MealFunction = (props: MealProps) => JSX.Element;
@@ -46,20 +45,23 @@ type HeaderFunction = (props: HeaderProps) => JSX.Element;
 type FetchFunction = (year: number, month: number) => Promise<AttendanceDto[]>;
 
 interface DayContext {
-    fetchAttendance: FetchFunction;
+    apiHandler: AttendanceApi;
     dayFunc: (props: { attendance: AttendanceDto, date: MealDate }) => JSX.Element;
 }
 
+type AttendanceUpdateRequest = (target: number, date: DayDate, attendance: MealAttendance[]) => Promise<MealAttendance[]>;
+
 interface MealContext {
-    updateAttendance: (target: number, date: DayDate, attendance: MealAttendance[]) => Promise<MealAttendance[]>;
+    apiHandler: AttendanceApi;
+    updateData: MealUpdateFunction;
     mealFunc: MealFunction;
     headerFunc: HeaderFunction;
 }
 
-
 export type {
     MealContext,
     AttendanceRequestData,
+    AttendanceUpdateRequest,
     DayContext,
     MealName,
     MealInfo,

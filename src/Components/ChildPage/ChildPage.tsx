@@ -65,10 +65,12 @@ function ChildPage(props: { nav: JSX.Element }) {
             <input className="child-name" type="text" value={_currentName} onChange={(e) => setName(e.currentTarget.value)} />
             <input className="child-surname" type="text" value={_currentSurname} onChange={(e) => setSurname(e.currentTarget.value)} />
             <select onChange={e => setCurrentId(parseInt(e.currentTarget.value))}>
-                {_groups.map(g => <option value={g.id}>{g.name}</option>)}
+                {_groups.map(g => <option key={g.id} value={g.id}>{g.name}</option>)}
             </select>
 
-            {meals.map(m => <><label htmlFor={m}>{mealNames[m as MealName]}</label><input id={m} type="checkbox" onClick={e => { addMeal(m, e.currentTarget.checked) }} /></>)}
+            {meals.map(m => <div className="default-meal-selection" key={m}>
+                <label htmlFor={m}>{mealNames[m as MealName]}</label><input id={m} type="checkbox" onClick={e => { addMeal(m, e.currentTarget.checked) }} />
+            </div>)}
             <span className="add-button" onClick={e => submitChildren()}>Dodaj</span>
         </div>
     </div>

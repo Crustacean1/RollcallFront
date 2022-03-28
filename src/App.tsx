@@ -1,4 +1,6 @@
+import { createContext } from 'react';
 import './App.css';
+
 import {
   BrowserRouter as Router,
   Route, Routes
@@ -12,11 +14,13 @@ import SummaryPage from './Components/SummaryPage/SummaryPage';
 import Navigation from './Components/Common/Navigation';
 
 function App() {
+
   var navig = <Navigation nav={[
     { "name": "Obecność", "address": "/" },
     { "name": "Dzieci", "address": "/children" },
     { "name": "Grupy", "address": "/groups" },
     { "name": "Podsumowanie", "address": "/summary" }]} />
+
   return (
     <Router>
       <Routes>

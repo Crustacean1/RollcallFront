@@ -1,16 +1,17 @@
 .calendar-day{
     min-width: 9vw;
     min-height: 150px;
-    background-color: rgb(236, 168, 168);
-    border-bottom: 5px solid  rgb(161, 122, 64);
+    background-color: rgb(48, 48, 48);
+    border-bottom: 5px solid  rgb(20, 197, 182);
     margin: 5px;
     text-align: center;
     -moz-user-select: none;
     user-select: none;
+    border-top-left-radius: 15px;
+    border-top-right-radius: 15px;
 }
 .day-meal{
-    margin-left: auto;
-    margin-right: auto;
+    margin: 3px;
     text-align: left;
     padding-left: 0.5vw;
     -moz-user-select: none;
@@ -25,6 +26,6 @@
     text-align: left;
     display:inline-block;
 }
-.calendar-day h4>*:hover{
+.calendar-day h4>span,input,label:hover{
     cursor: pointer;
 }

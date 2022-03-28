@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react';
 
 import './Calendar.css'
-import { AttendanceDto, MealAttendance, AttendanceSummary, MealDate } from '../../Api/ApiTypes';
-import Day, { LoadingDay } from './Day/Day';
+import { AttendanceDto } from '../../Api/ApiTypes';
+import { DisabledDay, LoadingDay } from './Day/Day';
 import { DayContext } from './Day/DayTypes';
+import apiHandler from '../../Api/Api';
 
 interface CalendarProps {
     context: DayContext;
@@ -34,6 +35,27 @@ function Calendar(props: CalendarProps) {
         return () => { isActive = false }
     }, [props.context, props.selectedDate]);
 
+    let renderDay = (date: Date) => {
+        let dayKey = `${date.getDate()}-${date.getMonth()}`;
+
+        if (date.getMonth() !== props.selectedDate.getMonth()) {
+            return (<div key={dayKey} className="empty-day"></div>);
+        }
+        else if (date.getDay() === 6 || date.getDay() === 0) {
+            return (<DisabledDay key={dayKey} date={new Date(date)} />);
+        }
+        else if (_attendance[date.getDate() - 1] === undefined) {
+            return (<LoadingDay key={dayKey} />);
+        }
+        return (<props.context.dayFunc key={dayKey}
+            attendance={_attendance[date.getDate() - 1]}
+            date={{
+                year: date.getFullYear(),
+                month: date.getMonth() + 1,
+                day: date.getDate()
+            }} />);
+    }
+
     let populateCalendar = () => {
         let result = [] as JSX.Element[];
         let date = new Date(props.selectedDate);
@@ -42,26 +64,9 @@ function Calendar(props: CalendarProps) {
 
         let nextMonth = ((props.selectedDate.getMonth() + 1) % 12);
 
-        for (let i: number = 0;
-            date.getMonth() !== nextMonth;
-            date.setDate(date.getDate() + 1)) {
+        for (; date.getMonth() !== nextMonth; date.setDate(date.getDate() + 1)) {
 
-            if (date.getMonth() !== props.selectedDate.getMonth()) {
-                result.push(<div key={++i} className="empty-day"></div>);
-                continue;
-            }
-            if (_attendance[date.getDate() - 1] === undefined) {
-                result.push(<LoadingDay key={++i} />);
-                continue;
-            }
-
-            result.push(<props.context.dayFunc key={++i}
-                attendance={_attendance[date.getDate() - 1]}
-                date={{
-                    year: date.getFullYear(),
-                    month: date.getMonth() + 1,
-                    day: date.getDate()
-                }} />);
+            result.push(renderDay(date));
         }
         return result;
     }
@@ -72,7 +77,6 @@ function Calendar(props: CalendarProps) {
     }
 
     let daysOfWeek = ["Pn", "Wt", "Śr", "Czw", "Pt", "Sob", "Nied"];
-    let dayKey = 0;
 
     return (
         <div className="calendar-container">
@@ -80,7 +84,7 @@ function Calendar(props: CalendarProps) {
             <div className="inner-calendar">
                 <h2>{props.selectedDate.getFullYear()} {props.selectedDate.toLocaleString('default', { month: 'long' })}</h2>
                 <div className="calendar-header">
-                    {daysOfWeek.map(a => <span key={++dayKey} className="day-header">{a}.</span>)}
+                    {daysOfWeek.map(a => <span key={a} className="day-header">{a}.</span>)}
                 </div>
                 <div className="calendar">
                     {populateCalendar()}

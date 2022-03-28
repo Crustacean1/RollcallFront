@@ -1,20 +1,20 @@
 import ChildDayHeader from './ChildHeader';
-import ChildMeal from './ChildMeal';
-import { FetchChildAttendance, SetChildAttendance } from './ChildApi';
-
-import { MealContext } from '../DayTypes';
+import { AttendanceApi } from '../../../../Api/ApiTypes';
+import { DayContext } from '../DayTypes';
 import CreateDayContext, { MonthCountUpdate } from '../Day';
+import ChildMeal from './ChildMeal';
 
-const childMealContext: MealContext = {
-    headerFunc: ChildDayHeader,
-    mealFunc: ChildMeal,
-    updateAttendance: SetChildAttendance
-}
 
-function CreateChildContext(childId: number, updateFunc: MonthCountUpdate) {
-    return CreateDayContext(childMealContext,
+function CreateChildContext(childId: number, apiHandler: AttendanceApi, updateFunc: MonthCountUpdate): DayContext {
+    return CreateDayContext(
+        {
+            headerFunc: ChildDayHeader,
+            mealFunc: ChildMeal,
+            updateData: (info, present) => { info.present = present ? 1 : 0 },
+            apiHandler: apiHandler
+        },
         childId,
-        (year: number, month: number) => FetchChildAttendance(childId, year, month),
+        apiHandler,
         updateFunc);
 }
 

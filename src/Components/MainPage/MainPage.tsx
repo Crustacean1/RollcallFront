@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, createContext } from 'react';
 
 import './MainPage.css';
 import Calendar from './Calendar';
@@ -22,6 +22,8 @@ interface MonthCount {
     desert: number;
 }
 
+const TokenContext = createContext('');
+
 function MainPage(props: { nav: JSX.Element }) {
 
     let getStartingDate = (year: number, month: number) => {
@@ -35,10 +37,7 @@ function MainPage(props: { nav: JSX.Element }) {
     let [_selectedDate, setDate] = useState<Date>(getStartingDate(now.getFullYear(), now.getMonth()));
     let [_monthCount, setMonthCount] = useState<MonthCount>({ breakfast: 0, dinner: 0, desert: 0 });
     let [_context, setContext] = useState<DayContext>(CreateGroupContext(0, setMonthCount));
-
-    useEffect(() => {
-        apiHandler.setToken(getTokenFromStorage());
-    }, []);
+    let [_token, setToken] = useState(getTokenFromStorage());
 
     let setGlobalMode = (mode: PreviewMode) => {
         setMode(mode);
@@ -56,8 +55,9 @@ function MainPage(props: { nav: JSX.Element }) {
                 <GroupDataPanel monthCount={_monthCount} setMonthCount={setMonthCount} targetId={_mode.groupId} date={_selectedDate} /> :
                 <ChildDataPanel monthCount={_monthCount} setMonthCount={setMonthCount} targetId={_mode.childId} date={_selectedDate} />}
                 setMode={setGlobalMode} mode={_mode} />
-            <Calendar context={_context}
-                selectedDate={_selectedDate} setDate={setDate} />
+            <TokenContext.Provider value="">
+                <Calendar context={_context} selectedDate={_selectedDate} setDate={setDate} />
+            </TokenContext.Provider>
         </div>
     </div>
 }

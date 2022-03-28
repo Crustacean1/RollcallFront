@@ -11,16 +11,16 @@
     animation-iteration-count: infinite;
     animation-timing-function: linear;
     animation-duration: 1s;
-    background-image: url('../../../public/images/loadingrec.png');
+    background-image: url('../../../public/images/loadingrec_white.png');
     background-size: contain;
     margin: auto;
 }
 
 @keyframes spinning{
     0%{
-        transform: rotate(0deg);
+        transform: rotate(360deg);
     }
     100%{
-        transform: rotate(359deg);
+        transform: rotate(0deg);
     }
 }

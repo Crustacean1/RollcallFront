@@ -1,4 +1,3 @@
-
 interface AttendanceSummary {
     breakfast: number;
     dinner: number;
@@ -8,14 +7,28 @@ interface AttendanceSummary {
 interface AttendanceSummaryDto {
     meals: AttendanceSummary;
 }
-interface MonthlyAttendanceDto {
-    days: AttendanceDto[];
-}
 
 interface Attendance {
     breakfast: boolean;
     dinner: boolean;
     desert: boolean;
+}
+
+
+interface MealDto {
+    present: number;
+    masked: boolean;
+}
+
+interface AttendanceDto {
+    breakfast: MealDto;
+    dinner: MealDto;
+    desert: MealDto;
+}
+
+interface MealAttendance {
+    name: string;
+    present: boolean;
 }
 
 interface MealDate {
@@ -24,20 +37,8 @@ interface MealDate {
     day: number;
 }
 
-interface MealDto {
-    present: number;
-    masked: boolean;
-}
-
-interface MealAttendance {
-    name: string;
-    present: boolean;
-}
-
-interface AttendanceDto {
-    breakfast: MealDto;
-    dinner: MealDto;
-    desert: MealDto;
+interface MonthlyAttendanceDto {
+    days: AttendanceDto[];
 }
 
 interface ChildDto {
@@ -66,9 +67,18 @@ interface JWToken {
 
 interface ChildAttendanceSummary {
     name: string;
-    id: number;
+    childId: number;
     surname: string;
+    groupName: string;
     summary: AttendanceSummary;
+}
+
+interface AttendanceApi {
+    getMonthlyAttendance: (childId: number, year: number, month: number) => Promise<MonthlyAttendanceDto>;
+    getDailyAttendance(childId: number, year: number, month: number, day: number): Promise<AttendanceDto>;
+    getMonthlyCount(childId: number, year: number, month: number): Promise<AttendanceSummaryDto>;
+    updateAttendance(childId: number, attendance: MealAttendance[], date: MealDate): Promise<MealAttendance[]>;
+    fetchDailySummary(group: number, year: number, month: number, day: number): Promise<ChildAttendanceSummary[]>;
 }
 
 export type {
@@ -84,5 +94,6 @@ export type {
     AttendanceSummaryDto,
     MonthlyAttendanceDto,
     MealAttendance,
-    ChildAttendanceSummary
+    ChildAttendanceSummary,
+    AttendanceApi
 };

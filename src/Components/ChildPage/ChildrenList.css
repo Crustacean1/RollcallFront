@@ -26,6 +26,3 @@
 .children-list input:hover{
     cursor:pointer;
 }
-.children-list{
-    background-color: rgb(107, 161, 107);
-}

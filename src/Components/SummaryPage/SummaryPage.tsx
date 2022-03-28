@@ -2,15 +2,7 @@ import { useState, useEffect } from 'react';
 import apiHandler from '../../Api/Api';
 import BasicTable from '../Common/Table';
 import './SummaryPage.css';
-
-interface ChildSummaryData {
-    name: string;
-    surname: string;
-    id: number;
-    breakfast: number;
-    dinner: number;
-    desert: number;
-}
+import {ChildSummaryData} from '../Common/Types'
 
 interface SummaryHeaderProps {
     year: number;
@@ -46,7 +38,8 @@ function SummaryPage(props: { nav: JSX.Element }) {
                     return {
                         name: r.name,
                         surname: r.surname,
-                        id: r.id,
+                        id: r.childId,
+                        groupName: r.groupName,
                         breakfast: r.summary.breakfast,
                         dinner: r.summary.dinner,
                         desert: r.summary.desert
@@ -60,6 +53,7 @@ function SummaryPage(props: { nav: JSX.Element }) {
     }, [_date])
 
     let displayChild = (child: ChildSummaryData) => (<tr>
+        <td>{child.groupName}</td>
         <td>{child.name}</td>
         <td>{child.surname}</td>
         <td>{child.breakfast}</td>
@@ -77,6 +71,7 @@ function SummaryPage(props: { nav: JSX.Element }) {
             prevMonth={() => changeMonth(-1)} nextMonth={() => changeMonth(1)} />
         <BasicTable
             headers={[
+                { "name": "groupName", "title": "Grupa" },
                 { "name": "name", "title": "Imię" },
                 { "name": "surname", "title": "Nazwisko" },
                 { "name": "breakfast", "title": "Śniadanie" },

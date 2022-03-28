@@ -1,8 +1,8 @@
 .main-preview{
     background-color: grey;
     min-width: 20px;
-    flex: 1;
-    margin: 20px;
+    flex: 2;
+    margin: 5px;
     display: flex;
     flex-flow: column nowrap;
     justify-content: flex-end;

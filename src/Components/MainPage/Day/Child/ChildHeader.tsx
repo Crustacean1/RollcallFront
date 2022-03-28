@@ -27,6 +27,7 @@ function ChildDayHeader(props: ChildDayHeaderProps) {
             isDisabled = true;
         }
     }
+
     let headerId = `child-header-${props.date.day}`;
     let checkbox = <input type="checkbox" id={headerId} disabled={isDisabled} checked={isChecked} onChange={(e) => {
         props.updateAttendance(e.currentTarget.checked,
