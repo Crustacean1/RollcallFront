@@ -1,4 +1,4 @@
-import { MealInfo, MealLabels, DayDate, MealUpdateFunction } from '../DayTypes';
+import { MealInfo, MealLabels, DayDate } from '../DayTypes';
 import { Loading, MiniLoader } from "../../../Common/Loading";
 
 
@@ -15,7 +15,7 @@ function GroupMeal(props: GroupMealProps) {
         disabled={props.info.loading}
         onChange={(e) => props.updateAttendance(e.currentTarget.checked)} />
 
-    let mealStyle = { "color": props.info.masked ? "grey" : "white" };
+    let mealStyle = { "color": props.info.masked ? "red" : "white" };
 
     return <div className="day-meal">
         <Loading condition={!props.info.loading} target={checkbox} loader={<MiniLoader size="16px" />} />

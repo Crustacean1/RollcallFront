@@ -1,7 +1,7 @@
 .main-preview{
     background-color: grey;
-    min-width: 20px;
-    flex: 2;
+    min-width: 450px;
+    flex: 0;
     margin: 5px;
     display: flex;
     flex-flow: column nowrap;

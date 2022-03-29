@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react';
 
 import fetchApi from '../../../Api/Api';
 import { ChildDto } from '../../../Api/ApiTypes';
-import { Loading, TableLoader } from '../../Common/Loading';
 import { Attendance } from '../../../Api/ApiTypes';
 import { PreviewMode } from '../../Common/Types';
 import './ChildPreview.css';
@@ -38,7 +37,7 @@ function ChildPreview(props: ChildPreviewProps) {
                         setLoaded(true);
                     }
                 }, (error) => {
-                    alert(error)
+                    //alert(error)
                 })
         }
         return () => { active = false; }

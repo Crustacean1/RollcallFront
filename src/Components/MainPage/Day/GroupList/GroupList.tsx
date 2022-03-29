@@ -47,6 +47,7 @@ function ChildItem(props: ChildItemProps) {
     </tr>
 }
 
+
 function GroupList(props: GroupListProps) {
     let [_children, setChildren] = useState<DailyChildSummaryDto[]>([]);
     let [_loading, setLoading] = useState(true);
@@ -59,6 +60,9 @@ function GroupList(props: GroupListProps) {
                 if (!isActive) { return; }
                 setChildren(response);
                 setLoading(false);
+            }, e => {
+                apiHandler.errorMessage(e);
+                setLoading(false)
             })
         return () => { setChildren(children => []); setLoading(true); isActive = false; }
     }, [props.folded, props.date, props.targetId]);

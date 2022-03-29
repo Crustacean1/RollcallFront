@@ -2,6 +2,12 @@ import { AttendanceApi, AttendanceDto, MealAttendance } from '../../../Api/ApiTy
 import { DayDate, DayInfo, MealNames, MealName, MealUpdateFunction } from './DayTypes';
 import { useState, useEffect } from 'react';
 
+const defaultAttendance: DayInfo = {
+    "breakfast": { name: "breakfast", loading: false, present: 0, masked: false },
+    "dinner": { name: "dinner", loading: false, present: 0, masked: false },
+    "desert": { name: "desert", loading: false, present: 0, masked: false },
+};
+
 function copyDayInfo(info: DayInfo): DayInfo {
     let newInfo = Object.assign({}, info);
     for (let name of MealNames) {
@@ -43,8 +49,19 @@ function readRefresh(info: DayInfo, refresh: AttendanceDto): DayInfo {
         "desert": { name: "desert" as MealName, loading: false, present: 0, masked: false },
     };
     for (let meal of MealNames) {
+        if (!refresh[meal]) {
+            continue;
+        }
         newInfo[meal].present = refresh[meal].present;
         newInfo[meal].masked = refresh[meal].masked;
+    }
+    return newInfo;
+}
+
+function setFailedMeals(info: DayInfo): DayInfo {
+    let newInfo = copyDayInfo(info);
+    for (let meal in newInfo) {
+        newInfo[meal as MealName].loading = false;
     }
     return newInfo;
 }
@@ -55,11 +72,6 @@ type ReturnType = [info: DayInfo,
     refreshMeals: () => void];
 
 
-const defaultAttendance: DayInfo = {
-    "breakfast": { name: "breakfast", loading: false, present: 0, masked: false },
-    "dinner": { name: "dinner", loading: false, present: 0, masked: false },
-    "desert": { name: "desert", loading: false, present: 0, masked: false },
-};
 
 function useAttendanceInfo(sourceInfo: AttendanceDto, date: DayDate, api: AttendanceApi,
     updateFunction: MealUpdateFunction): ReturnType {
@@ -75,6 +87,9 @@ function useAttendanceInfo(sourceInfo: AttendanceDto, date: DayDate, api: Attend
         api.updateAttendance(update, date)
             .then((response) => {
                 setInfo(info => setUpdatedMeals(info, response, updateFunction));
+            }, (e) => {
+                alert("Operacja nie powiodła się");
+                setInfo(info => setFailedMeals(info));
             })
     }
 
@@ -99,6 +114,7 @@ function useAttendanceInfo(sourceInfo: AttendanceDto, date: DayDate, api: Attend
         api.getDailyAttendance(date)
             .then((response) => {
                 setInfo(info => readRefresh(info, response));
+            }, e => {
             })
     }
     return [_info, updateMeal, updateMeals, refreshMeals];

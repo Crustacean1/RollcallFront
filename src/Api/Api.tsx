@@ -72,6 +72,31 @@ class Api {
         }
     }
 
+    errorMessage<T>(e: T) {
+        if (typeof e === "number") {
+            switch (e) {
+                case 404:
+                    alert("Nie znaleziono");
+                    break;
+                case 401:
+                    alert("Zaloguj się ponownie");
+                    break;
+                case 500:
+                    alert("Błąd po stronie serwera, skontaktuj się z administatorem (Kamil Kowalski)");
+                    break;
+                default:
+                    alert("Wystąpił nieprzewidziany błąd, rzuć wszystko co robisz i zadzwoń do Kamila(mnie)");
+            }
+        }
+        else {
+            alert("Wystąpił błąd: " + e + " załącz ten błąd w wiadomości do administratora")
+        }
+    }
+
+    refreshToken() {
+        this.token = getTokenFromStorage();
+    }
+
     toStringArray(...ints: number[]): string[] {
         let res: string[] = [];
         for (let item of ints) {

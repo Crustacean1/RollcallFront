@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import './GroupDataPanel.css';
 
 import apiHandler from '../../../Api/Api';
-import { GroupDto, AttendanceSummary } from '../../../Api/ApiTypes';
+import { GroupDto } from '../../../Api/ApiTypes';
 import { Loading, Loader } from '../../Common/Loading';
 import { MealName, MealPluralLabels } from '../Day/DayTypes';
 import { MonthCount } from '../MainPage';
@@ -33,7 +33,6 @@ function GroupDataPanel(props: DataPanelProps) {
                 setGroup(groupDto);
                 setGroupLoaded(true);
             }, (error) => {
-                console.log(error);
             });
 
         apiHandler.getGroupMonthlyCount(props.targetId, props.date.getFullYear(), props.date.getMonth() + 1)
@@ -42,7 +41,6 @@ function GroupDataPanel(props: DataPanelProps) {
                 props.setMonthCount(summary.meals);
                 setSummaryLoaded(true);
             }, (error) => {
-                console.log(error);
             });
 
         return () => { active = false; }

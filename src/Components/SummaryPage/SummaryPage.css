@@ -34,9 +34,11 @@
     background-color: rgb(151, 59, 226);
     padding: 5px;
 }
+
 .next-summary{
     background-image: url("../../../public/images/right_arrow.png");
 }
+
 .prev-summary{
     background-image: url("../../../public/images/left_arrow.png");
 }

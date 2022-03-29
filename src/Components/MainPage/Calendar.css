@@ -15,7 +15,7 @@
     flex-flow: row nowrap;
     align-items:center;
     justify-content: center;
-    min-width: 60%;
+    flex: 1;
     margin: 10px;
 }
 .calendar-container *{
@@ -24,25 +24,36 @@
 
 .calendar-prev , .calendar-next{
     display: inline-block;
-    width: 40px;
-    height: 30vh;
-    margin: 2px;
-    background-color: grey;
+    color: black;
+    width: 20px;
+    height: 40px;
+    background-size: cover;
+    margin: 0;
+    margin-left: 20px;
+    margin-right: 20px;
+
+    user-select: none;
+}
+.calendar-navigation {
+    width: 100%;
+    display: flex;
+    flex-flow: row nowrap;
+    justify-content: space-around;
+    align-items: center;
 }
 .calendar-next{
-    border-top-right-radius: 10px;
-    border-bottom-right-radius: 10px;
-    border-left: 6px solid rgb(33, 122, 103);
+    background-image: url("../../../public/images/right_arrow.png");
 }
 .calendar-prev{
-    border-top-left-radius: 10px;
-    border-bottom-left-radius: 10px;
-    border-right: 6px solid rgb(33, 122, 103);
+    background-image: url("../../../public/images/left_arrow.png");
 }
+
 .calendar-prev:hover , .calendar-next:hover{
     cursor: pointer;
-    background-color: rgb(172, 172, 172);
+    box-shadow: 0 0 5px;
 }
+
+
 .calendar .day-header{
     display: inline-block;
     text-align: center;

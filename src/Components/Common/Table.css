@@ -11,11 +11,14 @@
     scrollbar-width: none;
     -ms-overflow-style: none;
 }
+.basic-table-container::-webkit-scrollbar {
+    display: none;
+}
 .basic-table tbody tr{
     background-color: rgb(44, 44, 44);
 }
 .basic-table tbody td{
-    padding: 10px;
+    padding: 5px;
     text-align: center;
 }
 .basic-table thead th{

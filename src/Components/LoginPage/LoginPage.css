@@ -1,19 +1,26 @@
 .main-component{
     width: 100%;
     min-height: 100vh;
+    height: 100%;
     display: flex;
     flex-flow: column wrap;
     justify-content: center;
     align-items: center; 
 }
+.outer-login-panel{
+    min-width: 20%;
+    min-height: 10vh;
+    background-color: rgb(43, 43, 43);
+    color: white;
+    border-radius: 20px;
+}
 .login-panel{
+    margin: auto;
     display: flex;
     flex-flow: column wrap;
     justify-content: center;
     align-items: center;
     padding: 20px;
-    background-color: green;
-    border-radius: 5px;
 }
 .login-field{
     margin: 5px;

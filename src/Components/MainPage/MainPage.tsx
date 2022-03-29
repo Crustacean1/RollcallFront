@@ -1,12 +1,9 @@
-import { useState, useEffect, createContext } from 'react';
+import { useState, useEffect, useRef } from 'react';
 
 import './MainPage.css';
 import Calendar from './Calendar';
 import { PreviewMode } from '../Common/Types';
 import MainPreview from './Preview/MainPreview';
-
-import apiHandler from '../../Api/Api';
-import { getTokenFromStorage } from '../Common/Session';
 
 import CreateChildContext from './Day/Child/ChildContext';
 import CreateGroupContext from './Day/Group/GroupContext';
@@ -15,6 +12,7 @@ import ChildDataPanel from './DataPanel/ChildDataPanel';
 import GroupDataPanel from './DataPanel/GroupDataPanel';
 
 import { DayContext } from './Day/DayTypes';
+import apiHandler from '../../Api/Api';
 
 interface MonthCount {
     breakfast: number;
@@ -22,9 +20,9 @@ interface MonthCount {
     desert: number;
 }
 
-const TokenContext = createContext('');
-
 function MainPage(props: { nav: JSX.Element }) {
+
+    apiHandler.refreshToken();
 
     let getStartingDate = (year: number, month: number) => {
         let date = new Date(year, month, 1);
@@ -36,16 +34,24 @@ function MainPage(props: { nav: JSX.Element }) {
     let [_mode, setMode] = useState<PreviewMode>({ "type": "Group", "groupId": 0, "childId": 0 });
     let [_selectedDate, setDate] = useState<Date>(getStartingDate(now.getFullYear(), now.getMonth()));
     let [_monthCount, setMonthCount] = useState<MonthCount>({ breakfast: 0, dinner: 0, desert: 0 });
-    let [_context, setContext] = useState<DayContext>(CreateGroupContext(0, setMonthCount));
-    let [_token, setToken] = useState(getTokenFromStorage());
+
+    let defaultContext = CreateGroupContext(0, setMonthCount);
+
+    let [_context, setContext] = useState<DayContext>(defaultContext);
 
     let setGlobalMode = (mode: PreviewMode) => {
         setMode(mode);
     }
 
+    let prevMode = useRef(_mode);
+
     useEffect(() => {
+        if (_mode.type === prevMode.current.type && _mode.childId === prevMode.current.childId && _mode.groupId === prevMode.current.groupId) {
+            return;
+        }
         setContext(_mode.type === "Group" ? CreateGroupContext(_mode.groupId, setMonthCount) :
             CreateChildContext(_mode.childId, setMonthCount));
+        prevMode.current = _mode;
     }, [_mode])
 
     return <div className="main-component">
@@ -55,9 +61,7 @@ function MainPage(props: { nav: JSX.Element }) {
                 <GroupDataPanel monthCount={_monthCount} setMonthCount={setMonthCount} targetId={_mode.groupId} date={_selectedDate} /> :
                 <ChildDataPanel monthCount={_monthCount} setMonthCount={setMonthCount} targetId={_mode.childId} date={_selectedDate} />}
                 setMode={setGlobalMode} mode={_mode} />
-            <TokenContext.Provider value="">
-                <Calendar context={_context} selectedDate={_selectedDate} setDate={setDate} />
-            </TokenContext.Provider>
+            <Calendar context={_context} selectedDate={_selectedDate} setDate={setDate} />
         </div>
     </div>
 }

@@ -4,6 +4,9 @@ import './Calendar.css'
 import { AttendanceDto } from '../../Api/ApiTypes';
 import { DisabledDay, LoadingDay } from './Day/Day';
 import { DayContext } from './Day/DayTypes';
+import { useNavigate } from 'react-router-dom';
+
+import apiHandler from '../../Api/Api';
 
 interface CalendarProps {
     context: DayContext;
@@ -18,21 +21,25 @@ function Calendar(props: CalendarProps) {
     }
 
     let [_attendance, setAttendance] = useState<AttendanceDto[]>([]);
-
+    let navigate = useNavigate();
 
     useEffect(() => {
-        let isActive = true;
-
+        console.log(props);
         setAttendance([]);
-
+        let isActive = true;
         props.context.apiHandler.getMonthlyAttendance(...unrollDate(props.selectedDate)).then(
             (newAttendance) => {
                 if (isActive && newAttendance) {
                     setAttendance(newAttendance.days);
                 }
-            }, (e) => { console.log(e); });
+            }, e => {
+                apiHandler.errorMessage(e);
+                navigate('/login');
+            });
+
         return () => { isActive = false }
-    }, [props.context, props.selectedDate]);
+    }, [props.context, props.selectedDate, navigate]);
+
 
     let renderDay = (date: Date) => {
         let dayKey = `${date.getDate()}-${date.getMonth()}`;
@@ -79,9 +86,14 @@ function Calendar(props: CalendarProps) {
 
     return (
         <div className="calendar-container">
-            <div className="calendar-prev" onClick={() => { changeMonth(-1) }}></div>
             <div className="inner-calendar">
-                <h2>{props.selectedDate.getFullYear()} {props.selectedDate.toLocaleString('default', { month: 'long' })}</h2>
+                <div className="calendar-navigation">
+                    <span className="calendar-prev" onClick={() => changeMonth(-1)}></span>
+                    <h2>
+                        {props.selectedDate.getFullYear()} {props.selectedDate.toLocaleString('default', { month: 'long' })}
+                    </h2>
+                    <span className="calendar-next" onClick={() => changeMonth(1)}></span>
+                </div>
                 <div className="calendar-header">
                     {daysOfWeek.map(a => <span key={a} className="day-header">{a}.</span>)}
                 </div>
@@ -89,7 +101,6 @@ function Calendar(props: CalendarProps) {
                     {populateCalendar()}
                 </div>
             </div>
-            <div className="calendar-next" onClick={() => { changeMonth(1) }}></div>
         </div>);
 }
 
