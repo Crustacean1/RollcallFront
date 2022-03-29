@@ -36,7 +36,7 @@ function GroupDataPanel(props: DataPanelProps) {
                 console.log(error);
             });
 
-        apiHandler.fetchGroupSummary(props.targetId, props.date.getFullYear(), props.date.getMonth() + 1)
+        apiHandler.getGroupMonthlyCount(props.targetId, props.date.getFullYear(), props.date.getMonth() + 1)
             .then((summary) => {
                 if (!active) { return }
                 props.setMonthCount(summary.meals);

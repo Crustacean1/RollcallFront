@@ -4,7 +4,6 @@ import './Calendar.css'
 import { AttendanceDto } from '../../Api/ApiTypes';
 import { DisabledDay, LoadingDay } from './Day/Day';
 import { DayContext } from './Day/DayTypes';
-import apiHandler from '../../Api/Api';
 
 interface CalendarProps {
     context: DayContext;
@@ -15,7 +14,7 @@ interface CalendarProps {
 function Calendar(props: CalendarProps) {
 
     let unrollDate = (date: Date): [number, number] => {
-        return [date.getFullYear(), date.getMonth()];
+        return [date.getFullYear(), date.getMonth() + 1];
     }
 
     let [_attendance, setAttendance] = useState<AttendanceDto[]>([]);
@@ -26,10 +25,10 @@ function Calendar(props: CalendarProps) {
 
         setAttendance([]);
 
-        props.context.fetchAttendance(...unrollDate(props.selectedDate)).then(
+        props.context.apiHandler.getMonthlyAttendance(...unrollDate(props.selectedDate)).then(
             (newAttendance) => {
                 if (isActive && newAttendance) {
-                    setAttendance(newAttendance);
+                    setAttendance(newAttendance.days);
                 }
             }, (e) => { console.log(e); });
         return () => { isActive = false }

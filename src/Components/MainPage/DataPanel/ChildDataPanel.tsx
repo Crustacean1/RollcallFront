@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import './ChildDataPanel.css';
 
 import apiHandler from '../../../Api/Api';
-import { ChildDto, AttendanceSummary } from '../../../Api/ApiTypes';
+import { ChildDto } from '../../../Api/ApiTypes';
 import { Loading, Loader } from '../../Common/Loading';
 import { MealName, MealPluralLabels } from '../Day/DayTypes';
 import { MonthCount } from '../MainPage';
@@ -32,7 +32,7 @@ function ChildDataPanel(props: DataPanelProps) {
                 }
             });
 
-        apiHandler.fetchChildSummary(props.targetId, props.date.getFullYear(), props.date.getMonth() + 1)
+        apiHandler.getChildMonthlyCount(props.targetId, props.date.getFullYear(), props.date.getMonth() + 1)
             .then((summary) => {
                 if (active) {
                     setSummaryLoaded(true);

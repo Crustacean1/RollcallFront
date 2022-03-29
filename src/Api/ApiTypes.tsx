@@ -73,12 +73,19 @@ interface ChildAttendanceSummary {
     summary: AttendanceSummary;
 }
 
+interface DailyChildSummaryDto {
+    name: string;
+    childId: number;
+    surname: string;
+    groupName: string;
+    meals: AttendanceDto;
+}
+
 interface AttendanceApi {
-    getMonthlyAttendance: (childId: number, year: number, month: number) => Promise<MonthlyAttendanceDto>;
-    getDailyAttendance(childId: number, year: number, month: number, day: number): Promise<AttendanceDto>;
-    getMonthlyCount(childId: number, year: number, month: number): Promise<AttendanceSummaryDto>;
-    updateAttendance(childId: number, attendance: MealAttendance[], date: MealDate): Promise<MealAttendance[]>;
-    fetchDailySummary(group: number, year: number, month: number, day: number): Promise<ChildAttendanceSummary[]>;
+    getMonthlyAttendance: (year: number, month: number) => Promise<MonthlyAttendanceDto>;
+    getDailyAttendance(date: MealDate): Promise<AttendanceDto>;
+    getMonthlyCount(year: number, month: number): Promise<AttendanceSummaryDto>;
+    updateAttendance(attendance: MealAttendance[], date: MealDate): Promise<MealAttendance[]>;
 }
 
 export type {
@@ -92,6 +99,7 @@ export type {
     GroupSummaryDto,
     MealDate,
     AttendanceSummaryDto,
+    DailyChildSummaryDto,
     MonthlyAttendanceDto,
     MealAttendance,
     ChildAttendanceSummary,

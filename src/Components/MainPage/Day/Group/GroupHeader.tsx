@@ -1,6 +1,5 @@
 import './Group.css';
 import { useState } from 'react';
-import { AttendanceApi } from '../../../../Api/ApiTypes';
 
 import {
     DayInfo,
@@ -16,8 +15,8 @@ interface GroupDayHeaderProps {
     info: DayInfo;
     date: DayDate;
     targetId: number;
-    apiHandler: AttendanceApi,
     updateAttendance: (update: boolean, func: MealUpdateFunction) => void;
+    refreshAttendance: () => void;
 }
 
 function GroupDayHeader(props: GroupDayHeaderProps) {
@@ -35,11 +34,16 @@ function GroupDayHeader(props: GroupDayHeaderProps) {
     let checkbox = <input id={headerId} type="checkbox" checked={checked} onChange={e =>
         props.updateAttendance(e.currentTarget.checked, (info: MealInfo, update: boolean) => { info.masked = update })} />
 
+    let onExit = () => {
+        props.refreshAttendance();
+        setFolded(true);
+    }
+
     return <h4>
         <span className="group-list-button" onClick={e => setFolded(false)}>...</span>
         <label htmlFor={headerId}>{props.date.day}</label>
         {checkbox}
-        <GroupList date={props.date} targetId={props.targetId} apiHandler={props.apiHandler} folded={_folded} exit={() => setFolded(true)} />
+        <GroupList date={props.date} targetId={props.targetId} folded={_folded} exit={onExit} />
     </h4>
 }
 
