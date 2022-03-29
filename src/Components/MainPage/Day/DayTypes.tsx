@@ -37,6 +37,7 @@ interface HeaderProps {
     date: DayDate;
     info: DayInfo;
     updateAttendance: (update: boolean) => void;
+    refreshAttendance: () => void;
 }
 
 type MealFunction = (props: MealProps) => JSX.Element;
@@ -52,7 +53,6 @@ interface DayContext {
 type AttendanceUpdateRequest = (target: number, date: DayDate, attendance: MealAttendance[]) => Promise<MealAttendance[]>;
 
 interface MealContext {
-    apiHandler: AttendanceApi;
     updateData: MealUpdateFunction;
     mealFunc: MealFunction;
     headerFunc: HeaderFunction;

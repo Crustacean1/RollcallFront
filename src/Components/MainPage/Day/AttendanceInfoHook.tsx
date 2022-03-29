@@ -1,6 +1,6 @@
-import { MealAttendance } from '../../../Api/ApiTypes';
-import { DayInfo, MealNames, MealName, MealUpdateFunction } from './DayTypes';
-import { useState } from 'react';
+import { AttendanceApi, AttendanceDto, MealAttendance } from '../../../Api/ApiTypes';
+import { DayDate, DayInfo, MealNames, MealName, MealUpdateFunction } from './DayTypes';
+import { useState, useEffect } from 'react';
 
 function copyDayInfo(info: DayInfo): DayInfo {
     let newInfo = Object.assign({}, info);
@@ -27,18 +27,52 @@ function setUpdatedMeals(info: DayInfo, updates: MealAttendance[], updateFunc: M
     return newInfo;
 }
 
-type AttendanceUpdateRequest = (attendance: MealAttendance[]) => Promise<MealAttendance[]>
+function readAttendance(attendance: AttendanceDto): DayInfo {
+    let info = {
+        "breakfast": { ...attendance.breakfast, name: "breakfast" as MealName, loading: false },
+        "dinner": { ...attendance.dinner, name: "dinner" as MealName, loading: false },
+        "desert": { ...attendance.desert, name: "desert" as MealName, loading: false },
+    };
+    return info;
+}
 
-type ReturnType = [info: DayInfo, updateMeal: (name: MealName, update: boolean) => void, updateMeals: (update: boolean) => void];
+function readRefresh(info: DayInfo, refresh: AttendanceDto): DayInfo {
+    let newInfo = {
+        "breakfast": { name: "breakfast" as MealName, loading: false, present: 0, masked: false },
+        "dinner": { name: "dinner" as MealName, loading: false, present: 0, masked: false },
+        "desert": { name: "desert" as MealName, loading: false, present: 0, masked: false },
+    };
+    for (let meal of MealNames) {
+        newInfo[meal].present = refresh[meal].present;
+        newInfo[meal].masked = refresh[meal].masked;
+    }
+    return newInfo;
+}
 
-function useAttendanceInfo(defaultInfo: DayInfo, apiCallFunction: AttendanceUpdateRequest,
+type ReturnType = [info: DayInfo,
+    updateMeal: (name: MealName, update: boolean) => void,
+    updateMeals: (update: boolean) => void,
+    refreshMeals: () => void];
+
+
+const defaultAttendance: DayInfo = {
+    "breakfast": { name: "breakfast", loading: false, present: 0, masked: false },
+    "dinner": { name: "dinner", loading: false, present: 0, masked: false },
+    "desert": { name: "desert", loading: false, present: 0, masked: false },
+};
+
+function useAttendanceInfo(sourceInfo: AttendanceDto, date: DayDate, api: AttendanceApi,
     updateFunction: MealUpdateFunction): ReturnType {
 
-    let [_info, setInfo] = useState<DayInfo>(defaultInfo);
+    let [_info, setInfo] = useState<DayInfo>(defaultAttendance);
+
+    useEffect(() => {
+        setInfo(info => readAttendance(sourceInfo));
+    }, [sourceInfo])
 
     function updateMealArray(update: MealAttendance[]) {
         setInfo(info => startLoadingMeals(info, update.map(u => u.name as MealName)));
-        apiCallFunction(update)
+        api.updateAttendance(update, date)
             .then((response) => {
                 setInfo(info => setUpdatedMeals(info, response, updateFunction));
             })
@@ -51,11 +85,23 @@ function useAttendanceInfo(defaultInfo: DayInfo, apiCallFunction: AttendanceUpda
     function updateMeals(update: boolean) {
         let mealsToUpdate = [];
         for (let mealName of MealNames) {
-            mealsToUpdate.push({ name: mealName, present: update });
+            let meal = Object.assign({}, _info[mealName]);
+            updateFunction(meal, update);
+            if (meal.masked !== _info[mealName].masked || meal.present !== _info[mealName].present) {
+                mealsToUpdate.push({ name: mealName, present: update });
+            }
         }
         updateMealArray(mealsToUpdate);
     }
-    return [_info, updateMeal, updateMeals];
+
+    function refreshMeals() {
+        setInfo(info => startLoadingMeals(info, MealNames));
+        api.getDailyAttendance(date)
+            .then((response) => {
+                setInfo(info => readRefresh(info, response));
+            })
+    }
+    return [_info, updateMeal, updateMeals, refreshMeals];
 }
 
 export default useAttendanceInfo;

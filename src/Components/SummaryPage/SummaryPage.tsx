@@ -1,65 +1,67 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import apiHandler from '../../Api/Api';
 import BasicTable from '../Common/Table';
 import './SummaryPage.css';
-import {ChildSummaryData} from '../Common/Types'
+import { ChildAttendanceSummary } from '../../Api/ApiTypes';
 
 interface SummaryHeaderProps {
     year: number;
     month: number;
     prevMonth: () => void;
     nextMonth: () => void;
+    refresh: () => void;
 }
 
 function SummaryHeader(props: SummaryHeaderProps) {
+    let extend = () => {
+        apiHandler.extendAttendance(props.year, props.month)
+            .then((response) => { props.refresh(); alert("Przedłużono " + response.updated + " umów") })
+
+    }
+
     return <div className="summary-header">
         <div className="summary-navigation">
             <span className="prev-summary" onClick={props.prevMonth}></span>
             <h1>Podsumowanie miesiąca: {props.year} - {props.month}</h1>
             <span className="next-summary" onClick={props.nextMonth}></span>
         </div>
-        <span className="summary-extend-button">Przedłuż obecność</span>
+        <span className="summary-extend-button" onClick={extend}>Przedłuż obecność</span>
     </div>
 }
 
 function SummaryPage(props: { nav: JSX.Element }) {
-    let [_children, setChildren] = useState<ChildSummaryData[]>([]);
+    let [_children, setChildren] = useState<ChildAttendanceSummary[]>([]);
     let [_loading, setLoading] = useState(false);
     let [_date, setDate] = useState(new Date());
 
-    useEffect(() => {
-        let isActive = true;
+    let refresh = useCallback((isActive: boolean) => {
         setLoading(true);
         setChildren([]);
-        apiHandler.fetchTotalSummary(_date.getFullYear(), _date.getMonth() + 1)
+        apiHandler.fetchMonthlySummary(_date.getFullYear(), _date.getMonth() + 1)
             .then((response) => {
                 if (!isActive) { return; }
-                setChildren(response.map(r => {
-                    return {
-                        name: r.name,
-                        surname: r.surname,
-                        id: r.childId,
-                        groupName: r.groupName,
-                        breakfast: r.summary.breakfast,
-                        dinner: r.summary.dinner,
-                        desert: r.summary.desert
-                    }
-                }));
+                setChildren(response);
                 setLoading(false);
             }, (status) => {
-                alert("In SummaryPage: " + status);
+                alert("Error: In SummaryPage: " + status);
             })
-        return () => { isActive = false; }
-    }, [_date])
+    }, [_date]);
 
-    let displayChild = (child: ChildSummaryData) => (<tr>
+    useEffect(() => {
+        let isActive = true;
+        refresh(isActive);
+        return () => { isActive = false; }
+    }, [_date, refresh])
+
+    let displayChild = (child: ChildAttendanceSummary) => (<tr>
         <td>{child.groupName}</td>
         <td>{child.name}</td>
         <td>{child.surname}</td>
-        <td>{child.breakfast}</td>
-        <td>{child.dinner}</td>
-        <td>{child.desert}</td>
+        <td>{child.summary.breakfast}</td>
+        <td>{child.summary.dinner}</td>
+        <td>{child.summary.desert}</td>
     </tr>);
+
     let changeMonth = (dir: number) => {
         var newDate = new Date(_date.setMonth(_date.getMonth() + dir));
         setDate(newDate);
@@ -67,7 +69,7 @@ function SummaryPage(props: { nav: JSX.Element }) {
 
     return <div className="summary-page">
         {props.nav}
-        <SummaryHeader year={_date.getFullYear()} month={_date.getMonth() + 1}
+        <SummaryHeader refresh={() => refresh(true)} year={_date.getFullYear()} month={_date.getMonth() + 1}
             prevMonth={() => changeMonth(-1)} nextMonth={() => changeMonth(1)} />
         <BasicTable
             headers={[

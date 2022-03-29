@@ -1,14 +1,13 @@
 import './Day.css';
 import { useCallback, useRef, useEffect } from 'react';
 import { Loading, Loader } from '../../Common/Loading';
-import { AttendanceApi, AttendanceDto, MealAttendance } from '../../../Api/ApiTypes';
+import { AttendanceApi, AttendanceDto } from '../../../Api/ApiTypes';
 import { MonthCount } from '../../MainPage/MainPage';
 
 import useAttendanceInfo from './AttendanceInfoHook';
 import {
     MealContext,
     DayContext,
-    MealName,
     MealNames,
     DayDate,
     DayInfo,
@@ -26,30 +25,20 @@ interface DayProps {
     attendance: AttendanceDto;
 }
 
-function ReadAttendance(attendance: AttendanceDto): DayInfo {
-    let info = {
-        "breakfast": { ...attendance.breakfast, name: "breakfast" as MealName, loading: false },
-        "dinner": { ...attendance.dinner, name: "dinner" as MealName, loading: false },
-        "desert": { ...attendance.desert, name: "desert" as MealName, loading: false },
-    };
-    return info;
-}
-
 function getMealChange(a: MealInfo, b: MealInfo) {
     return (a.masked ? 0 : a.present) - (b.masked ? 0 : b.present);
 }
 
 function Day(props: DayProps) {
 
-    let callApiUpdate = useCallback((meals: MealAttendance[]) => props.apiHandler.updateAttendance(props.targetId, meals, props.date),
-        [props.apiHandler, props.targetId, props.date]);
-
-    let [_info, updateMeal, updateMeals] = useAttendanceInfo(ReadAttendance(props.attendance), callApiUpdate, props.context.updateData);
+    let [_info, updateMeal, toggleMeals, refreshMeals] = useAttendanceInfo(props.attendance,
+        props.date,
+        props.apiHandler,
+        props.context.updateData);
 
     const prevInfoRef = useRef<DayInfo>(_info);
 
     useEffect(() => {
-        let isActive = true;
         props.countUpdate(a => {
             return {
                 breakfast: a.breakfast + getMealChange(_info.breakfast, prevInfoRef.current.breakfast),
@@ -58,11 +47,9 @@ function Day(props: DayProps) {
             }
         })
         prevInfoRef.current = _info;
-        return () => { isActive = false; }
-
     }, [_info])
 
-    let renderMeals = () => {
+    let renderMeals = useCallback(() => {
         let result: JSX.Element[] = [];
 
         for (let mealName of MealNames) {
@@ -73,10 +60,10 @@ function Day(props: DayProps) {
                 date={props.date} />);
         }
         return result;
-    }
+    }, [_info, props])
 
     return <div className="calendar-day">
-        {props.context.headerFunc({ date: props.date, info: _info, updateAttendance: updateMeals })}
+        {props.context.headerFunc({ date: props.date, info: _info, refreshAttendance: refreshMeals, updateAttendance: toggleMeals })}
         <div className="meal-container">
             {renderMeals()}
         </div>
