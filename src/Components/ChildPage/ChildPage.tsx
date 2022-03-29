@@ -36,7 +36,7 @@ function ChildPage(props: { nav: JSX.Element }) {
 
     let addMeal = (name: string, value: boolean) => {
         let newAttendance = Object.assign([], _currentAttendance);
-        let prev = _currentAttendance.find(a => a.name == name);
+        let prev = _currentAttendance.find(a => a.name === name);
         if (prev == null) {
             newAttendance.push({ name: name, present: value });
         }

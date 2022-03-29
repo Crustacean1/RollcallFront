@@ -47,7 +47,6 @@ function ChildItem(props: ChildItemProps) {
     </tr>
 }
 
-
 function GroupList(props: GroupListProps) {
     let [_children, setChildren] = useState<DailyChildSummaryDto[]>([]);
     let [_loading, setLoading] = useState(true);

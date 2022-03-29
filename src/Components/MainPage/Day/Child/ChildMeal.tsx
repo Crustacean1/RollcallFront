@@ -5,7 +5,6 @@ import {
     MealLabels,
     DayDate,
     MealInfo,
-    MealUpdateFunction
 } from '../DayTypes';
 
 interface ChildMealProps {
