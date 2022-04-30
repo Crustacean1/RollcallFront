@@ -1,74 +1,32 @@
-import { AttendanceApi, AttendanceDto, MealDate, MealAttendance } from '../../../Api/ApiTypes';
+import { AttendanceCountDto, MealDate, ChildAttendanceDto } from '../../../Api/ApiTypes';
 
 interface AttendanceRequestData {
     target: number;
     date: MealDate;
 }
 
-interface MealInfo {
+interface MealState {
     name: MealName;
     present: number;
     masked: boolean;
     loading: boolean;
 }
 
-interface DayInfo {
-    breakfast: MealInfo;
-    dinner: MealInfo;
-    desert: MealInfo;
+interface DayMealState {
+    [mealName: string]: MealState;
 }
 
-interface DayDate {
-    day: number;
-    month: number;
-    year: number;
-}
+type MealUpdateFunction = (info: MealState, update: boolean) => void;
 
-
-type MealUpdateFunction = (info: MealInfo, update: boolean) => void;
-
-interface MealProps {
-    date: DayDate;
-    info: MealInfo;
-    updateAttendance: (update: boolean) => void;
-}
-
-interface HeaderProps {
-    date: DayDate;
-    info: DayInfo;
-    updateAttendance: (update: boolean) => void;
-    refreshAttendance: () => void;
-}
-
-type MealFunction = (props: MealProps) => JSX.Element;
-type HeaderFunction = (props: HeaderProps) => JSX.Element;
-
-type FetchFunction = (year: number, month: number) => Promise<AttendanceDto[]>;
-
-interface DayContext {
-    apiHandler: AttendanceApi;
-    dayFunc: (props: { attendance: AttendanceDto, date: MealDate }) => JSX.Element;
-}
-
-type AttendanceUpdateRequest = (target: number, date: DayDate, attendance: MealAttendance[]) => Promise<MealAttendance[]>;
-
-interface MealContext {
-    updateData: MealUpdateFunction;
-    mealFunc: MealFunction;
-    headerFunc: HeaderFunction;
-}
+type MonthCountUpdate = (arg: AttendanceCountDto) => void;
 
 export type {
-    MealContext,
     AttendanceRequestData,
-    AttendanceUpdateRequest,
-    DayContext,
     MealName,
-    MealInfo,
-    DayInfo,
-    DayDate,
+    MealState,
+    DayMealState,
     MealUpdateFunction,
-    FetchFunction,
+    MonthCountUpdate
 };
 
 type MealName = "breakfast" | "dinner" | "desert"

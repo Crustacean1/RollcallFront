@@ -1,18 +1,4 @@
-import {
-    JWToken,
-    ChildAttendanceSummary,
-    MealAttendance,
-    MealDate,
-    AttendanceDto,
-    ChildDto,
-    GroupDto,
-    AttendanceSummaryDto,
-    MonthlyAttendanceDto,
-    Attendance,
-    DailyChildSummaryDto
-} from "./ApiTypes";
-
-import { getTokenFromStorage } from '../Components/Common/Session';
+import { AttendanceDto } from './ApiTypes';
 
 class Api {
     httpOk: number;
@@ -20,9 +6,9 @@ class Api {
     httpCreatedEmpty: number;
     httpNotFound: number;
     httpUnauthorized: number;
+    httpServerError: number;
 
     apiEndpoint: string;
-    token: string;
 
     constructor() {
         this.httpOk = 200;
@@ -30,9 +16,9 @@ class Api {
         this.httpCreatedEmpty = 204;
         this.httpNotFound = 404;
         this.httpUnauthorized = 401;
+        this.httpServerError = 500;
 
         this.apiEndpoint = process.env.REACT_APP_API_URL ?? "";
-        this.token = getTokenFromStorage();
     }
 
     getFetchOptions(fetchMethod: string, object: any, token: string): RequestInit {
@@ -68,33 +54,8 @@ class Api {
             case this.httpCreatedEmpty:
                 return data.json();
             default:
-                return Promise.reject(data.status);//Probably...
+                return Promise.reject(data.status);
         }
-    }
-
-    errorMessage<T>(e: T) {
-        if (typeof e === "number") {
-            switch (e) {
-                case 404:
-                    alert("Nie znaleziono");
-                    break;
-                case 401:
-                    alert("Zaloguj się ponownie");
-                    break;
-                case 500:
-                    alert("Błąd po stronie serwera, skontaktuj się z administatorem (Kamil Kowalski)");
-                    break;
-                default:
-                    alert("Wystąpił nieprzewidziany błąd, rzuć wszystko co robisz i zadzwoń do Kamila(mnie)");
-            }
-        }
-        else {
-            alert("Wystąpił błąd: " + e + " załącz ten błąd w wiadomości do administratora")
-        }
-    }
-
-    refreshToken() {
-        this.token = getTokenFromStorage();
     }
 
     toStringArray(...ints: number[]): string[] {
@@ -105,6 +66,7 @@ class Api {
         return res;
     }
 
+
     sendRequest<T>(method: string, object: any, token: string, ...path: string[]): Promise<T> {
         return this.fetchFromApi(this.concatPath(...path), method, object, token)
             .then(data => this.handleStatus(data))
@@ -112,99 +74,17 @@ class Api {
                 return response as Promise<T>
             })
     }
-
-    setToken(newToken: string) {
-        this.token = newToken;
+    post<T>(object: any, token: string, ...path: string[]): Promise<T> {
+        return this.sendRequest<T>("POST", object, token, ...path);
     }
-
-    /*Login Methods*/
-
-    tryLogin(login: string, password: string): Promise<JWToken> {
-        return this.sendRequest<JWToken>("POST", { "Login": login, "Password": password }, "", "user");
+    get<T>(token: string, ...path: string[]): Promise<T> {
+        return this.sendRequest<T>("GET", {}, token, ...path);
     }
-
-    /* Fetch Group Attendance*/
-
-    getGroupMonthlyAttendance(groupId: number, year: number, month: number): Promise<MonthlyAttendanceDto> {
-        return this.sendRequest("GET", {}, this.token, "attendance", "group", "daily", ...this.toStringArray(groupId, year, month));
+    put<T>(object: any, token: string, ...path: string[]): Promise<T> {
+        return this.sendRequest<T>("PUT", object, token, ...path);
     }
-    getGroupDailyAttendance(groupId: number, date: MealDate): Promise<{ meals: AttendanceDto }> {
-        return this.sendRequest("GET", {}, this.token, "attendance", "group", "daily", ...this.toStringArray(groupId, date.year, date.month, date.day));
-    }
-    getGroupMonthlyCount(groupId: number, year: number, month: number): Promise<AttendanceSummaryDto> {
-        return this.sendRequest("GET", {}, this.token, "attendance", "group", "count", ...this.toStringArray(groupId, year, month));
-    }
-
-    updateGroupAttendance(groupId: number, mask: MealAttendance[], date: MealDate): Promise<MealAttendance[]> {
-        return this.sendRequest("POST", mask, this.token, "attendance", "group",
-            ...this.toStringArray(groupId, date.year, date.month, date.day));
-    }
-
-    /* Child Attendance Methods*/
-
-    getChildMonthlyAttendance(childId: number, year: number, month: number): Promise<MonthlyAttendanceDto> {
-        return this.sendRequest("GET", {}, this.token, "attendance", "child", "daily", ...this.toStringArray(childId, year, month));
-    }
-    getChildDailyAttendance(childId: number, date: MealDate): Promise<{ meals: AttendanceDto }> {
-        return this.sendRequest("GET", {}, this.token, "attendance", "child", "daily", ...this.toStringArray(childId, date.year, date.month, date.day))
-    }
-    getChildMonthlyCount(childId: number, year: number, month: number): Promise<AttendanceSummaryDto> {
-        return this.sendRequest("GET", {}, this.token, "attendance", "child", "count", ...this.toStringArray(childId, year, month));
-    }
-    updateChildAttendance(childId: number, attendance: MealAttendance[], date: MealDate): Promise<MealAttendance[]> {
-        return this.sendRequest("POST", attendance, this.token, "attendance", "child"
-            , ...this.toStringArray(childId, date.year, date.month, date.day));
-    }
-
-    /*SUMMARY INFO FETCHING*/
-
-    fetchMonthlySummary(year: number, month: number): Promise<ChildAttendanceSummary[]> {
-        return this.sendRequest("GET", {}, this.token, "attendance", "group", "summary", ...this.toStringArray(year, month));
-    }
-    fetchDailySummary(group: number, year: number, month: number, day: number): Promise<DailyChildSummaryDto[]> {
-        return this.sendRequest("GET", {}, this.token, "attendance", "group", "summary", ...this.toStringArray(group, year, month, day));
-    }
-    extendAttendance(year: number, month: number): Promise<{ updated: number }> {
-        return this.sendRequest("POST", {}, this.token, "attendance", "child", "extend", ...this.toStringArray(year, month));
-    }
-
-    /*  CRUD METHODS OF CHILD AND GROUP*/
-
-    addChild(name: string, surname: string, groupId: number, attendance: Attendance): Promise<number[]> {
-        return this.sendRequest("POST",
-            [{
-                "Name": name,
-                "Surname": surname,
-                "GroupId": groupId,
-                "DefaultAttendance": attendance
-            }], this.token, "child");
-    }
-
-    fetchChild(childId: number): Promise<ChildDto> {
-        return this.sendRequest("GET", {}, this.token, "child",
-            ...this.toStringArray(childId));
-    }
-
-    updateDefaultAttendance(childId: number, attendance: MealAttendance[]): Promise<MealAttendance[]> {
-        return this.sendRequest("POST", attendance, this.token, "child", "attendance",
-            ...this.toStringArray(childId));
-    }
-
-
-    fetchGroup(groupId: number): Promise<GroupDto> {
-        return this.sendRequest("GET", {}, this.token, "group", ...this.toStringArray(groupId/*,year, month*/));
-    }
-
-    addGroup(groupName: string): Promise<GroupDto> {
-        return this.sendRequest("POST", { "Name": groupName }, this.token, "group");
-    }
-
-    fetchGroups(): Promise<GroupDto[]> {
-        return this.sendRequest("GET", {}, this.token, "group");
-    }
-
-    fetchChildrenFromGroup(groupId: number): Promise<ChildDto[]> {
-        return this.sendRequest("GET", {}, this.token, "child", "group", ...this.toStringArray(groupId));
+    patch<T>(object: any, token: string, ...path: string[]): Promise<T> {
+        return this.sendRequest<T>("PATCH", object, token, ...path);
     }
 }
 

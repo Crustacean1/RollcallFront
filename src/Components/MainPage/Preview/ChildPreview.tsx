@@ -1,50 +1,54 @@
 import { useState, useEffect } from 'react';
 
 import fetchApi from '../../../Api/Api';
-import { ChildDto } from '../../../Api/ApiTypes';
-import { Attendance } from '../../../Api/ApiTypes';
+import { ChildDto, ChildAttendanceDto } from '../../../Api/ApiTypes';
 import { PreviewMode } from '../../Common/Types';
-import './ChildPreview.css';
 import BasicTable from '../../Common/Table';
+import { MealNames } from '../Day/DayTypes';
+
+import { useSession } from '../../Common/Session';
+
+import './ChildPreview.css';
 
 interface ChildPreviewProps {
     mode: PreviewMode;
-    setMode: (mode: PreviewMode) => void;
+    setMode: (update: (mode: PreviewMode) => PreviewMode) => void;
 }
 
-function ChildItem(props: { name: string, surname: string, default: Attendance, setMode: () => void }) {
+function ChildItem(props: { name: string, surname: string, default: ChildAttendanceDto, setMode: () => void }) {
     return <tr className="child-row" onClick={props.setMode}>
         <td>{props.name}</td>
         <td>{props.surname}</td>
-        <td>{props.default.breakfast ? "✅" : "❌"}</td>
-        <td>{props.default.dinner ? "✅" : "❌"}</td>
-        <td>{props.default.desert ? "✅" : "❌"}</td>
+        {MealNames.map(meal => <td>{props.default[meal] ? "✅" : "❌"}</td>)}
     </tr>
 }
 
 function ChildPreview(props: ChildPreviewProps) {
-    let [_children, setChildren] = useState<ChildDto[]>([]);
-    let [_loaded, setLoaded] = useState(false);
+    const [_children, setChildren] = useState<ChildDto[]>([]);
+    const [_loaded, setLoaded] = useState(false);
+
+    const _session = useSession();
 
     useEffect(() => {
         let active = true;
         if (props.mode.type !== "Child") {
             setLoaded(false);
-            fetchApi.fetchChildrenFromGroup(props.mode.groupId)
+            fetchApi.get<ChildDto[]>(_session.token, "child")
                 .then((children) => {
                     if (active) {
                         setChildren(children);
                         setLoaded(true);
                     }
                 }, (error) => {
-                    //alert(error)
+                    _session.invalidateSession(); // TODO: Obsługa innych błędów
+                    alert("Sesja wygasła, zaloguj się ponownie");
                 })
         }
         return () => { active = false; }
     }, [props.mode])
 
     let selectChild = (childId: number) => {
-        props.setMode({ "type": "Child", "groupId": props.mode.groupId, "childId": childId });
+        props.setMode(mode => {return { "type": "Child", "groupId": props.mode.groupId, "childId": childId }});
     }
 
     let displayFunc = (child: ChildDto) => ChildItem({ name: child.name, surname: child.surname, default: child.defaultAttendance, setMode: () => { selectChild(child.id) } });

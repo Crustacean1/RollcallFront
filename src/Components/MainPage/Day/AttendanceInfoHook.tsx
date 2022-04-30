@@ -1,14 +1,84 @@
-import { AttendanceApi, AttendanceDto, MealAttendance } from '../../../Api/ApiTypes';
-import { DayDate, DayInfo, MealNames, MealName, MealUpdateFunction } from './DayTypes';
+import {  AttendanceApi, AttendanceDto, AttendanceCountDto, ChildAttendanceDto } from '../../../Api/ApiTypes';
+import { DayMealState, MealState, MealNames, MealName } from './DayTypes';
 import { useState, useEffect } from 'react';
 
-const defaultAttendance: DayInfo = {
-    "breakfast": { name: "breakfast", loading: false, present: 0, masked: false },
-    "dinner": { name: "dinner", loading: false, present: 0, masked: false },
-    "desert": { name: "desert", loading: false, present: 0, masked: false },
-};
+type MealSelectionFunction = (m: MealState) => boolean;
+type MealUpdateFunction = (m: MealState, u: boolean) => void;
+type MealStateCallback = (delta: AttendanceCountDto) => void;
 
-function copyDayInfo(info: DayInfo): DayInfo {
+type ReturnType = [info: DayMealState,
+    reloadMeals: (source: DayMealState) => void,
+    updateMeals: (meals: MealName[], update: boolean) => void,
+    updateMasks: (meals: MealName[], update: boolean) => void];
+
+function useAttendanceInfo(sourceDto: AttendanceDto,
+    api: AttendanceApi,
+    updateCallback: MealStateCallback): ReturnType {
+
+    const [_mealState, setMealState] = useState<DayMealState>(getStateFromDto(sourceDto));
+
+    useEffect(() => {
+        setMealState(getStateFromDto(sourceDto));
+    }, [sourceDto])
+
+
+    const updateMealArray = (update: ChildAttendanceDto): Promise<ChildAttendanceDto> => {
+        setMealState(state => startLoadingMeals(state, update));
+
+        return api.updateAttendance(update)
+            .then((response) => {
+                return response;
+            }, (e) => {
+                alert("Zmiana obecności nie powiodła się");
+                setMealState(info => setFailedMeals(info));
+                return {};
+            })
+    }
+
+    const updateMealState = (response: ChildAttendanceDto, updateFunc: MealUpdateFunction) => {
+        let oldState: DayMealState = {};
+        let newState: DayMealState = {};
+        setMealState(state => {
+            oldState = { ...state };
+            newState = { ...setUpdatedMeals(state, response, updateFunc) };
+            return newState;
+        });
+        updateCallback(getDelta(oldState, newState));
+    }
+
+    const updateAttendance = (mealsToUpdate: MealName[], update: boolean) => {
+
+        const mealUpdate = selectMealsToUpdate(_mealState, mealsToUpdate, update, m => m.present === 1);
+
+        updateMealArray(mealUpdate)
+            .then((response) => {
+                updateMealState(response, (m, u) => { m.present = u ? 1 : 0 });
+            }, (e) => { console.log(e); })
+    }
+
+    const updateMasks = (mealsToUpdate: MealName[], update: boolean) => {
+        const mealUpdate = selectMealsToUpdate(_mealState, mealsToUpdate, update, m => m.masked);
+
+        updateMealArray(mealUpdate)
+            .then((response) => {
+                updateMealState(response, (m, u) => { m.masked = u });
+            }, (e) => { console.log(e); })
+    }
+
+    return [_mealState, setMealState, updateAttendance, updateMasks];
+}
+
+function selectMealsToUpdate(prev: DayMealState, updateTarget: MealName[], update: boolean, mealCompare: MealSelectionFunction): ChildAttendanceDto {
+    const mealsToUpdate: ChildAttendanceDto = {};
+    for (let meal of updateTarget) {
+        if (mealCompare(prev[meal]) !== update) {
+            mealsToUpdate[meal] = update;
+        }
+    }
+    return mealsToUpdate;
+}
+
+function copyMealState(info: DayMealState): DayMealState {
     let newInfo = Object.assign({}, info);
     for (let name of MealNames) {
         newInfo[name] = Object.assign({}, info[name]);
@@ -16,108 +86,49 @@ function copyDayInfo(info: DayInfo): DayInfo {
     return newInfo;
 }
 
-function startLoadingMeals(info: DayInfo, names: MealName[]): DayInfo {
-    let newInfo = copyDayInfo(info);
-    for (let name of names) {
-        newInfo[name].loading = true;
+function startLoadingMeals(info: DayMealState, meals: ChildAttendanceDto): DayMealState {
+    let newInfo = copyMealState(info);
+    for (let name in meals) {
+        newInfo[name as MealName].loading = true;
     }
     return newInfo;
 }
 
-function setUpdatedMeals(info: DayInfo, updates: MealAttendance[], updateFunc: MealUpdateFunction): DayInfo {
-    let newInfo = copyDayInfo(info);
-    for (let meal of updates) {
-        updateFunc(newInfo[meal.name as MealName], meal.present);
-        newInfo[meal.name as MealName].loading = false;
+function setUpdatedMeals(info: DayMealState, updates: ChildAttendanceDto, updateFunc: MealUpdateFunction): DayMealState {
+    let newInfo = copyMealState(info);
+    for (let meal in updates) {
+        updateFunc(newInfo[meal as MealName], updates[meal]);
+        newInfo[meal as MealName].loading = false;
     }
     return newInfo;
 }
 
-function readAttendance(attendance: AttendanceDto): DayInfo {
-    let info = {
-        "breakfast": { ...attendance.breakfast, name: "breakfast" as MealName, loading: false },
-        "dinner": { ...attendance.dinner, name: "dinner" as MealName, loading: false },
-        "desert": { ...attendance.desert, name: "desert" as MealName, loading: false },
-    };
-    return info;
-}
-
-function readRefresh(info: DayInfo, refresh: AttendanceDto): DayInfo {
-    let newInfo = {
-        "breakfast": { name: "breakfast" as MealName, loading: false, present: 0, masked: false },
-        "dinner": { name: "dinner" as MealName, loading: false, present: 0, masked: false },
-        "desert": { name: "desert" as MealName, loading: false, present: 0, masked: false },
-    };
-    for (let meal of MealNames) {
-        if (!refresh[meal]) {
-            continue;
-        }
-        newInfo[meal].present = refresh[meal].present;
-        newInfo[meal].masked = refresh[meal].masked;
-    }
-    return newInfo;
-}
-
-function setFailedMeals(info: DayInfo): DayInfo {
-    let newInfo = copyDayInfo(info);
+function setFailedMeals(info: DayMealState): DayMealState {
+    let newInfo = copyMealState(info);
     for (let meal in newInfo) {
         newInfo[meal as MealName].loading = false;
     }
     return newInfo;
 }
 
-type ReturnType = [info: DayInfo,
-    updateMeal: (name: MealName, update: boolean) => void,
-    updateMeals: (update: boolean) => void,
-    refreshMeals: () => void];
-
-
-
-function useAttendanceInfo(sourceInfo: AttendanceDto, date: DayDate, api: AttendanceApi,
-    updateFunction: MealUpdateFunction): ReturnType {
-
-    let [_info, setInfo] = useState<DayInfo>(defaultAttendance);
-
-    useEffect(() => {
-        setInfo(info => readAttendance(sourceInfo));
-    }, [sourceInfo])
-
-    function updateMealArray(update: MealAttendance[]) {
-        setInfo(info => startLoadingMeals(info, update.map(u => u.name as MealName)));
-        api.updateAttendance(update, date)
-            .then((response) => {
-                setInfo(info => setUpdatedMeals(info, response, updateFunction));
-            }, (e) => {
-                alert("Operacja nie powiodła się");
-                setInfo(info => setFailedMeals(info));
-            })
+function getStateFromDto(dto: AttendanceDto): DayMealState {
+    const mealState: DayMealState = {};
+    for (let meal in dto) {
+        mealState[meal] = { name: meal as MealName, present: dto[meal].present, masked: dto[meal].masked, loading: false };
     }
+    return mealState;
+}
 
-    function updateMeal(name: MealName, update: boolean) {
-        updateMealArray([{ name: name, present: update }]);
-    }
+function getDelta(prev: DayMealState, now: DayMealState): AttendanceCountDto {
+    const delta: AttendanceCountDto = {};
+    const getRealMealCount = (m: MealState) => (m.masked ? 0 : m.present);
 
-    function updateMeals(update: boolean) {
-        let mealsToUpdate = [];
-        for (let mealName of MealNames) {
-            let meal = Object.assign({}, _info[mealName]);
-            updateFunction(meal, update);
-            if (meal.masked !== _info[mealName].masked || meal.present !== _info[mealName].present) {
-                mealsToUpdate.push({ name: mealName, present: update });
-            }
+    for (let meal in prev) {
+        if (now[meal] !== undefined) {
+            delta[meal] = getRealMealCount(now[meal]) - getRealMealCount(prev[meal]);
         }
-        updateMealArray(mealsToUpdate);
     }
-
-    function refreshMeals() {
-        setInfo(info => startLoadingMeals(info, MealNames));
-        api.getDailyAttendance(date)
-            .then((response) => {
-                setInfo(info => readRefresh(info, response));
-            }, e => {
-            })
-    }
-    return [_info, updateMeal, updateMeals, refreshMeals];
+    return delta;
 }
 
 export default useAttendanceInfo;

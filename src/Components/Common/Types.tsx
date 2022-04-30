@@ -1,4 +1,3 @@
-
 interface PreviewMode {
     type: "Child" | "Group";
     groupId: number;
@@ -14,5 +13,7 @@ interface ChildSummaryData {
     dinner: number;
     desert: number;
 }
+
+
 
 export type { PreviewMode, ChildSummaryData };

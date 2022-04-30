@@ -3,19 +3,22 @@ import './ChildrenList.css';
 import { useState, useEffect } from 'react';
 
 import apiHandler from '../../Api/Api';
-import { ChildDto } from '../../Api/ApiTypes';
+import { ChildDto, ChildAttendanceDto } from '../../Api/ApiTypes';
 import '../Common/Table';
 import BasicTable from '../Common/Table';
 import { MealName } from '../MainPage/Day/DayTypes';
+import { useSession } from '../Common/Session';
 
 
 function ChildrenList(props: { newest: number }) {
-    let [_children, setChildren] = useState<ChildDto[]>([]);
-    let [_loading, setLoading] = useState<boolean>(true);
+    const [_children, setChildren] = useState<ChildDto[]>([]);
+    const [_loading, setLoading] = useState<boolean>(true);
+
+    const _session = useSession();
 
     useEffect(() => {
         setChildren([]);
-        apiHandler.fetchChildrenFromGroup(0)
+        apiHandler.get<ChildDto[]>(_session.token, "child", "group", ...apiHandler.toStringArray(0))
             .then(children => {
                 setChildren(children);
                 setLoading(false);
@@ -23,13 +26,13 @@ function ChildrenList(props: { newest: number }) {
     }, [props.newest]);
 
     let changeAttendance = (childId: number, mealName: string, value: boolean) => {
-        apiHandler.updateDefaultAttendance(childId, [{ name: mealName, present: value }])
-            .then(r => {
+        apiHandler.post<ChildAttendanceDto>({ name: mealName, present: value }, _session.token, "child", ...apiHandler.toStringArray(childId))
+            .then(response => {
                 let newChildren: ChildDto[] = Object.assign([], _children);
                 let child = newChildren.find(c => c.id === childId);
                 if (child) {
-                    for (let meal of r) {
-                        child.defaultAttendance[meal.name as MealName] = meal.present;
+                    for (let meal in response) {
+                        child.defaultAttendance[meal as MealName] = response[meal];
                     }
                     setChildren(newChildren);
                 }

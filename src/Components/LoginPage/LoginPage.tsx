@@ -1,11 +1,11 @@
-import { useState } from 'react';
+import { useState, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 import './LoginPage.css';
 import apiHandler from '../../Api/Api';
 import { JWToken } from '../../Api/ApiTypes';
-import { saveTokenToStorage } from '../Common/Session';
 import { Loader, Loading } from '../Common/Loading';
+import { useSession } from '../Common/Session';
 
 interface LoginPageProps {
 }
@@ -24,18 +24,20 @@ function Field(props: FieldProps) {
 }
 
 function LoginPage(props: LoginPageProps) {
-    let navigate = useNavigate();
+    const navigate = useNavigate();
 
-    let [login, setLogin] = useState<string>("");
-    let [password, setPassword] = useState<string>("");
-    let [_loading, setLoading] = useState(false);
+    const _session = useSession();
 
-    let tryLogin = () => {
+    const [login, setLogin] = useState<string>("");
+    const [password, setPassword] = useState<string>("");
+    const [_loading, setLoading] = useState(false);
+
+    const tryLogin = () => {
         setLoading(true);
-        apiHandler.tryLogin(login, password).then(
+        apiHandler.sendRequest<JWToken>("POST", { "Login": login, "Password": password }, "token", "user").then(
             (value: JWToken) => {
                 setLoading(false);
-                saveTokenToStorage(value.token);
+                _session.startSession(value.token);
                 navigate("/");
             },
             (error: Error) => {
@@ -46,6 +48,7 @@ function LoginPage(props: LoginPageProps) {
             }
         )
     }
+
     let content = (
         <div className="login-panel">
             <h3>Zaloguj się:</h3>

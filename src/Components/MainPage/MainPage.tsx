@@ -1,70 +1,76 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useCallback } from 'react';
 
 import './MainPage.css';
-import Calendar from './Calendar';
+import Calendar, { DayComponentProps, MealFetchFunction } from './Calendar';
 import { PreviewMode } from '../Common/Types';
+import { MealNames } from './Day/DayTypes';
 import MainPreview from './Preview/MainPreview';
-
-import CreateChildContext from './Day/Child/ChildContext';
-import CreateGroupContext from './Day/Group/GroupContext';
 
 import ChildDataPanel from './DataPanel/ChildDataPanel';
 import GroupDataPanel from './DataPanel/GroupDataPanel';
 
-import { DayContext } from './Day/DayTypes';
-import apiHandler from '../../Api/Api';
+import ChildDay from './Day/Child/ChildDay';
 
-interface MonthCount {
-    breakfast: number;
-    dinner: number;
-    desert: number;
-}
+import apiHandler from '../../Api/Api';
+import { AttendanceDto, AttendanceCountDto } from '../../Api/ApiTypes';
 
 function MainPage(props: { nav: JSX.Element }) {
 
-    apiHandler.refreshToken();
-
-    let getStartingDate = (year: number, month: number) => {
+    const getStartingDate = (year: number, month: number) => {
         let date = new Date(year, month, 1);
         return date;
     }
 
-    let now = new Date();
+    const now = new Date();
 
-    let [_mode, setMode] = useState<PreviewMode>({ "type": "Group", "groupId": 0, "childId": 0 });
-    let [_selectedDate, setDate] = useState<Date>(getStartingDate(now.getFullYear(), now.getMonth()));
-    let [_monthCount, setMonthCount] = useState<MonthCount>({ breakfast: 0, dinner: 0, desert: 0 });
+    const [_mode, setMode] = useState<PreviewMode>({ "type": "Group", "groupId": 0, "childId": 0 });
+    const [_selectedDate, setDate] = useState<Date>(getStartingDate(now.getFullYear(), now.getMonth()));
+    const [_monthCount, setMonthCount] = useState<AttendanceCountDto>({ breakfast: 0, dinner: 0, desert: 0 });
 
-    let defaultContext = CreateGroupContext(0, setMonthCount);
+    const updateMonthCount = useCallback((delta: AttendanceCountDto) =>
+        setMonthCount(count => {
+            const newCount = { ...count };
+            for (let meal in newCount) {
+                if (delta[meal] !== undefined) {
+                    newCount[meal] += delta[meal];
+                }
+            }
+            return newCount;
+        }),
+        [setMonthCount]);
 
-    let [_context, setContext] = useState<DayContext>(defaultContext);
+    const dayComponent = useCallback(
+        ((dayProps: DayComponentProps) => ChildDay({ targetId: _mode.childId, countUpdate: updateMonthCount, ...dayProps })),
+        [_mode, updateMonthCount]);
 
-    let setGlobalMode = (mode: PreviewMode) => {
-        setMode(mode);
-    }
+    const fetchFunction: MealFetchFunction = useCallback(
+        (token: string, date: Date) =>
+            apiHandler.get<AttendanceDto[]>(token,
+                "attendance",
+                _mode.type === "Group" ? "group" : "child",
+                "daily",
+                ...apiHandler.toStringArray((_mode.type === "Group" ? _mode.groupId : _mode.childId), date.getFullYear(), date.getMonth() + 1)),
+        [_mode])
 
-    let prevMode = useRef(_mode);
-
-    useEffect(() => {
-        if (_mode.type === prevMode.current.type && _mode.childId === prevMode.current.childId && _mode.groupId === prevMode.current.groupId) {
-            return;
+    const mealCounterReset = useCallback((count: AttendanceCountDto) => {
+        let newCounter: AttendanceCountDto = {};
+        for (let meal of MealNames) {
+            newCounter[meal] = count[meal] === undefined ? 0 : count[meal];
         }
-        setContext(_mode.type === "Group" ? CreateGroupContext(_mode.groupId, setMonthCount) :
-            CreateChildContext(_mode.childId, setMonthCount));
-        prevMode.current = _mode;
-    }, [_mode])
+        setMonthCount(newCounter);
+    }, [setMonthCount])
+
+    const dataPanel = (_mode.type === "Group" ?
+        <GroupDataPanel monthCount={_monthCount} setMonthCount={mealCounterReset} targetId={_mode.groupId} date={_selectedDate} /> :
+        <ChildDataPanel monthCount={_monthCount} setMonthCount={mealCounterReset} targetId={_mode.childId} date={_selectedDate} />);
 
     return <div className="main-component">
         {props.nav}
         <div className="main-content">
-            <MainPreview panelComponent={_mode.type === "Group" ?
-                <GroupDataPanel monthCount={_monthCount} setMonthCount={setMonthCount} targetId={_mode.groupId} date={_selectedDate} /> :
-                <ChildDataPanel monthCount={_monthCount} setMonthCount={setMonthCount} targetId={_mode.childId} date={_selectedDate} />}
-                setMode={setGlobalMode} mode={_mode} />
-            <Calendar context={_context} selectedDate={_selectedDate} setDate={setDate} />
+            <MainPreview panelComponent={dataPanel} setMode={setMode} mode={_mode} />
+            <Calendar SelectedDay={dayComponent} fetchFunction={fetchFunction} selectedDate={_selectedDate} setDate={setDate} />
         </div>
     </div>
 }
 
-export type { MonthCount };
 export default MainPage;

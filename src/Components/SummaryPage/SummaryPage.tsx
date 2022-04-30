@@ -2,7 +2,9 @@ import { useState, useEffect, useCallback } from 'react';
 import apiHandler from '../../Api/Api';
 import BasicTable from '../Common/Table';
 import './SummaryPage.css';
-import { ChildAttendanceSummary } from '../../Api/ApiTypes';
+import { AttendanceCountDto } from '../../Api/ApiTypes';
+import { useSession } from '../Common/Session';
+import { MealNames } from '../MainPage/Day/DayTypes';
 
 interface SummaryHeaderProps {
     year: number;
@@ -12,11 +14,22 @@ interface SummaryHeaderProps {
     refresh: () => void;
 }
 
-function SummaryHeader(props: SummaryHeaderProps) {
-    let extend = () => {
-        apiHandler.extendAttendance(props.year, props.month)
-            .then((response) => { props.refresh(); alert("Przedłużono " + response.updated + " umów") })
+interface ChildAttendanceSummary {
+    name: string;
+    surname: string;
+    groupName: string;
+    summary: AttendanceCountDto;
+}
 
+function SummaryHeader(props: SummaryHeaderProps) {
+    const _session = useSession();
+
+    let extend = () => {
+        apiHandler.sendRequest<{ updated: number }>("POST", {}, _session.token, "attendance", "group", "extend", ...apiHandler.toStringArray(props.year, props.month))
+            .then((response) => {
+                props.refresh();
+                alert("Przedłużono " + response.updated + " umów")
+            })
     }
 
     return <div className="summary-header">
@@ -30,14 +43,17 @@ function SummaryHeader(props: SummaryHeaderProps) {
 }
 
 function SummaryPage(props: { nav: JSX.Element }) {
-    let [_children, setChildren] = useState<ChildAttendanceSummary[]>([]);
-    let [_loading, setLoading] = useState(false);
-    let [_date, setDate] = useState(new Date());
+    const [_children, setChildren] = useState<ChildAttendanceSummary[]>([]);
+    const [_loading, setLoading] = useState(false);
+    const [_date, setDate] = useState(new Date());
+
+    const _session = useSession();
 
     let refresh = useCallback((isActive: boolean) => {
         setLoading(true);
         setChildren([]);
-        apiHandler.fetchMonthlySummary(_date.getFullYear(), _date.getMonth() + 1)
+        apiHandler.sendRequest<ChildAttendanceSummary[]>("GET", {}, _session.token, "attendance", "group", "summary",
+            ...apiHandler.toStringArray(_date.getFullYear(), _date.getMonth() + 1))
             .then((response) => {
                 if (!isActive) { return; }
                 setChildren(response);
@@ -57,9 +73,7 @@ function SummaryPage(props: { nav: JSX.Element }) {
         <td>{child.groupName}</td>
         <td>{child.name}</td>
         <td>{child.surname}</td>
-        <td>{child.summary.breakfast}</td>
-        <td>{child.summary.dinner}</td>
-        <td>{child.summary.desert}</td>
+        {MealNames.map(n => <td>{child.summary[n]}</td>)}
     </tr>);
 
     let changeMonth = (dir: number) => {

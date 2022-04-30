@@ -1,36 +1,33 @@
 import './ChildMeal.css';
 import { Loading, MiniLoader } from '../../../Common/Loading';
+import { MealDate, } from '../../../../Api/ApiTypes';
 
-import {
-    MealLabels,
-    DayDate,
-    MealInfo,
-    MealUpdateFunction
-} from '../DayTypes';
+import { MealLabels, MealName } from '../DayTypes';
+import { MealState } from '../DayTypes';
 
 interface ChildMealProps {
-    date: DayDate;
-    info: MealInfo;
+    date: MealDate;
+    mealState: MealState;
     updateAttendance: (update: boolean) => void;
 }
 
-function ChildMeal(props: ChildMealProps) {
+function ChildMeal({ date, mealState, updateAttendance }: ChildMealProps) {
 
-    let id = `meal-${props.date.day}-${props.info.name}`;
+    const id = `meal-${date.day}-${mealState.name}`;
 
-    let isChecked = props.info.present === 1;
-    let isDisabled = props.info.masked === true || props.info.loading;
+    const isChecked = mealState.present === 1;
+    const isDisabled = mealState.masked === true || mealState.loading;
 
-    let style = { "color": props.info.masked ? "red" : "white" };
+    const style = { "color": mealState.masked ? "red" : "white" };
 
-    let checkbox = <input id={id} type="checkbox"
+    const checkbox = <input id={id} type="checkbox"
         disabled={isDisabled}
         checked={isChecked}
-        onChange={(e) => props.updateAttendance(e.currentTarget.checked)} />
+        onChange={(e) => updateAttendance(e.currentTarget.checked)} />
 
     return <div className="day-meal">
-        <Loading condition={!props.info.loading} target={checkbox} loader={<MiniLoader size="16px" />} />
-        <label style={style} htmlFor={id}>{MealLabels[props.info.name]}</label>
+        <Loading condition={!mealState.loading} target={checkbox} loader={<MiniLoader size="16px" />} />
+        <label style={style} htmlFor={id}>{MealLabels[mealState.name as MealName]}</label>
     </div>
 }
 

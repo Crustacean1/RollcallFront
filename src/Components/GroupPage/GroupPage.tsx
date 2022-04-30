@@ -1,18 +1,21 @@
 import { useState, useEffect } from 'react';
 import apiHandler from '../../Api/Api';
 import { GroupDto } from '../../Api/ApiTypes';
+import { useSession } from '../Common/Session';
 import './GroupPage.css';
 
 import BasicTable from '../Common/Table';
 
 function GroupPage(props: { nav: JSX.Element }) {
-    let [_groups, setGroups] = useState<GroupDto[]>([]);
-    let [_currentName, setCurrentName] = useState("Homary");
-    let [_loading, setLoading] = useState(true);
+    const [_groups, setGroups] = useState<GroupDto[]>([]);
+    const [_currentName, setCurrentName] = useState("Homary");
+    const [_loading, setLoading] = useState(true);
+
+    const _session = useSession();
 
     let refreshGroup = () => {
         setLoading(true);
-        apiHandler.fetchGroups().then(newGroups => {
+        apiHandler.get<GroupDto[]>(_session.token, "group").then(newGroups => {
             setGroups(newGroups);
             setLoading(false);
         });
@@ -23,7 +26,7 @@ function GroupPage(props: { nav: JSX.Element }) {
     }, []);
 
     let addGroup = (groupName: string) => {
-        apiHandler.addGroup(groupName).then((newGroup) => {
+        apiHandler.post({ "name": groupName }, _session.token, "group").then((newGroup) => {
             refreshGroup();
         })
     }

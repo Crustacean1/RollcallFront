@@ -1,25 +1,28 @@
 import './ChildPage.css';
 import { useEffect, useState } from 'react';
 import apiHandler from '../../Api/Api';
-import { MealAttendance, GroupDto } from '../../Api/ApiTypes';
+import { ChildAttendanceDto, GroupDto } from '../../Api/ApiTypes';
 import ChildrenList from './ChildrenList';
+import { useSession } from '../Common/Session';
 
 type MealName = "breakfast" | "dinner" | "desert";
 
 function ChildPage(props: { nav: JSX.Element }) {
 
-    let [_groups, setGroups] = useState<GroupDto[]>([]);
+    const [_groups, setGroups] = useState<GroupDto[]>([]);
 
-    let [_currentGroupId, setCurrentId] = useState(0);
-    let [_currentName, setName] = useState("Karol");
-    let [_currentSurname, setSurname] = useState("Wojtyła");
-    let [_currentAttendance, setAttendance] = useState<MealAttendance[]>([]);
+    const [_currentGroupId, setCurrentId] = useState(0);
+    const [_currentName, setName] = useState("Karol");
+    const [_currentSurname, setSurname] = useState("Wojtyła");
+    const [_currentAttendance, setAttendance] = useState<ChildAttendanceDto>({});
 
-    let [_newChildId, setNewId] = useState(0);
+    const [_newChildId, setNewId] = useState(0);
+
+    const _session = useSession();
 
     useEffect(() => {
         let active = true;
-        apiHandler.fetchGroups().then((newGroups) => {
+        apiHandler.get<GroupDto[]>(_session.token, "group").then((newGroups) => {
             if (active) {
                 setGroups(newGroups)
                 setCurrentId(newGroups[0].id);
@@ -36,24 +39,19 @@ function ChildPage(props: { nav: JSX.Element }) {
 
     let addMeal = (name: string, value: boolean) => {
         let newAttendance = Object.assign([], _currentAttendance);
-        let prev = _currentAttendance.find(a => a.name == name);
-        if (prev == null) {
-            newAttendance.push({ name: name, present: value });
-        }
-        else {
-            prev.present = value;
-        }
+        newAttendance[name] = value;
         setAttendance(newAttendance);
     }
 
     let submitChildren = () => {
-        let dto = { "breakfast": false, "dinner": false, "desert": false };
-        for (let meal of _currentAttendance) {
-            dto[meal.name as MealName] = meal.present;
-        }
-        apiHandler.addChild(_currentName, _currentSurname, _currentGroupId, dto)
-            .then((success) => {
-                setNewId(_newChildId + 1);
+        apiHandler.post<number>({
+            "name": _currentName,
+            "surname": _currentSurname,
+            "groupId": _currentGroupId,
+            "defaultAttendance": _currentAttendance
+        }, _session.token, "child")
+            .then((newChildId) => {
+                setNewId(newChildId);
             })
     }
 

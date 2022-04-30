@@ -3,23 +3,26 @@ import { useState, useEffect } from 'react';
 import './GroupDataPanel.css';
 
 import apiHandler from '../../../Api/Api';
-import { GroupDto } from '../../../Api/ApiTypes';
+import { GroupDto, AttendanceCountDto } from '../../../Api/ApiTypes';
 import { Loading, Loader } from '../../Common/Loading';
 import { MealName, MealPluralLabels } from '../Day/DayTypes';
-import { MonthCount } from '../MainPage';
+import { useSession } from '../../Common/Session';
 
 interface DataPanelProps {
-    setMonthCount: (arg: MonthCount) => void;
-    monthCount: MonthCount;
+    setMonthCount: (update: AttendanceCountDto) => void;
+    monthCount: AttendanceCountDto;
     targetId: number;
     date: Date;
 }
 
-function GroupDataPanel(props: DataPanelProps) {
 
-    let [_group, setGroup] = useState<GroupDto>();
-    let [_groupLoaded, setGroupLoaded] = useState(false);
-    let [_summaryLoaded, setSummaryLoaded] = useState(false);
+function GroupDataPanel({ setMonthCount, monthCount, targetId, date }: DataPanelProps) {
+
+    const [_group, setGroup] = useState<GroupDto>();
+    const [_groupLoaded, setGroupLoaded] = useState(false);
+    const [_summaryLoaded, setSummaryLoaded] = useState(false);
+
+    const _session = useSession();
 
     useEffect(() => {
         setSummaryLoaded(false);
@@ -27,7 +30,7 @@ function GroupDataPanel(props: DataPanelProps) {
 
         var active = true;
 
-        apiHandler.fetchGroup(props.targetId)
+        apiHandler.get<GroupDto>(_session.token, "group", ...apiHandler.toStringArray(targetId))
             .then((groupDto) => {
                 if (!active) { return }
                 setGroup(groupDto);
@@ -35,16 +38,16 @@ function GroupDataPanel(props: DataPanelProps) {
             }, (error) => {
             });
 
-        apiHandler.getGroupMonthlyCount(props.targetId, props.date.getFullYear(), props.date.getMonth() + 1)
+        apiHandler.get<AttendanceCountDto>(_session.token, "attendance", "group", "monthly",
+            ...apiHandler.toStringArray(targetId, date.getFullYear(), date.getMonth() + 1))
             .then((summary) => {
-                if (!active) { return }
-                props.setMonthCount(summary.meals);
-                setSummaryLoaded(true);
-            }, (error) => {
+                if (active) {
+                    setSummaryLoaded(true);
+                    setMonthCount(summary);
+                }
             });
-
         return () => { active = false; }
-    }, [props.targetId, props.date])
+    }, [targetId, setMonthCount, _session, date])
 
     let meals: MealName[] = ["breakfast", "dinner", "desert"];
 
@@ -52,7 +55,7 @@ function GroupDataPanel(props: DataPanelProps) {
         <h2>Grupa: {_group?.name}</h2>
         <h3>W tym miesiącu:</h3>
         <div className="data-month-summary">
-            {meals.map((m, i) => <h4 key={i}> {MealPluralLabels[m]} : {props.monthCount[m]}</h4>)}
+            {meals.map((m, i) => <h4 key={i}> {MealPluralLabels[m]} : {monthCount[m]}</h4>)}
         </div>
     </>);
     return <div className="data-panel group-panel">

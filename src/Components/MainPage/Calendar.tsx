@@ -1,50 +1,57 @@
 import { useState, useEffect } from 'react';
 
 import './Calendar.css'
-import { AttendanceDto } from '../../Api/ApiTypes';
-import { DisabledDay, LoadingDay } from './Day/Day';
-import { DayContext } from './Day/DayTypes';
-import { useNavigate } from 'react-router-dom';
+import { MealNames } from './Day/DayTypes';
+import { MealDate, AttendanceDto } from '../../Api/ApiTypes';
+import LoadingDay from './Day/LoadingDay';
+import DisabledDay from './Day/DisabledDay';
 
-import apiHandler from '../../Api/Api';
+import { useSession } from '../Common/Session';
+
+interface DayComponentProps {
+    date: MealDate,
+    attendance: AttendanceDto,
+}
+
+type DayComponent = (props: DayComponentProps) => JSX.Element;
+
+type MealFetchFunction = (token: string, date: Date) => Promise<AttendanceDto[]>;
 
 interface CalendarProps {
-    context: DayContext;
+    fetchFunction: MealFetchFunction;
+
+    SelectedDay: DayComponent;
+
     selectedDate: Date;
     setDate: (date: Date) => void;
 }
 
-function Calendar(props: CalendarProps) {
+function Calendar({ fetchFunction, SelectedDay, selectedDate, setDate }: CalendarProps) {
 
-    let unrollDate = (date: Date): [number, number] => {
-        return [date.getFullYear(), date.getMonth() + 1];
-    }
+    const [_attendance, setAttendance] = useState<AttendanceDto[]>([]);
 
-    let [_attendance, setAttendance] = useState<AttendanceDto[]>([]);
-    let navigate = useNavigate();
+    const _session = useSession();
 
     useEffect(() => {
-        console.log(props);
         setAttendance([]);
         let isActive = true;
-        props.context.apiHandler.getMonthlyAttendance(...unrollDate(props.selectedDate)).then(
+        fetchFunction(_session.token, selectedDate).then(
             (newAttendance) => {
-                if (isActive && newAttendance) {
-                    setAttendance(newAttendance.days);
+                if (isActive && newAttendance && newAttendance) {
+                    setAttendance(newAttendance.map(a => patchAttendance(a, MealNames)));
                 }
             }, e => {
-                apiHandler.errorMessage(e);
-                navigate('/login');
+                _session.invalidateSession();
             });
 
         return () => { isActive = false }
-    }, [props.context, props.selectedDate, navigate]);
+    }, [_session, selectedDate, fetchFunction, SelectedDay]);
 
 
-    let renderDay = (date: Date) => {
+    const renderDay = (date: Date) => {
         let dayKey = `${date.getDate()}-${date.getMonth()}`;
 
-        if (date.getMonth() !== props.selectedDate.getMonth()) {
+        if (date.getMonth() !== selectedDate.getMonth()) {
             return (<div key={dayKey} className="empty-day"></div>);
         }
         else if (date.getDay() === 6 || date.getDay() === 0) {
@@ -53,22 +60,19 @@ function Calendar(props: CalendarProps) {
         else if (_attendance[date.getDate() - 1] === undefined) {
             return (<LoadingDay key={dayKey} />);
         }
-        return (<props.context.dayFunc key={dayKey}
-            attendance={_attendance[date.getDate() - 1]}
-            date={{
-                year: date.getFullYear(),
-                month: date.getMonth() + 1,
-                day: date.getDate()
-            }} />);
+        return <SelectedDay
+            key={`${date.getMonth() + 1}-${date.getDate()}`}
+            date={{ year: date.getFullYear(), month: date.getMonth() + 1, day: date.getDate() }}
+            attendance={_attendance[date.getDate()]} />
     }
 
     let populateCalendar = () => {
         let result = [] as JSX.Element[];
-        let date = new Date(props.selectedDate);
+        let date = new Date(selectedDate);
 
         date.setDate(date.getDate() - ((date.getDay() + 6) % 7));//Align to monday
 
-        let nextMonth = ((props.selectedDate.getMonth() + 1) % 12);
+        let nextMonth = ((selectedDate.getMonth() + 1) % 12);
 
         for (; date.getMonth() !== nextMonth; date.setDate(date.getDate() + 1)) {
 
@@ -78,21 +82,21 @@ function Calendar(props: CalendarProps) {
     }
 
     let changeMonth = (move: number) => {
-        let newDate = new Date(props.selectedDate.getFullYear(), props.selectedDate.getMonth() + move, 1)
-        props.setDate(newDate);
+        let newDate = new Date(selectedDate.getFullYear(), selectedDate.getMonth() + move, 1)
+        setDate(newDate);
     }
 
-    let daysOfWeek = ["Pn", "Wt", "Śr", "Czw", "Pt", "Sob", "Nied"];
+    const daysOfWeek = ["Pn", "Wt", "Śr", "Czw", "Pt", "Sob", "Nied"];
 
     return (
         <div className="calendar-container">
             <div className="inner-calendar">
                 <div className="calendar-navigation">
-                    <span className="calendar-prev" onClick={() => changeMonth(-1)}></span>
-                    <h2>
-                        {props.selectedDate.getFullYear()} {props.selectedDate.toLocaleString('default', { month: 'long' })}
+                    <span className="calendar-prev button" onClick={() => changeMonth(-1)}></span>
+                    <h2 className="calendar-date">
+                        {selectedDate.getFullYear()} {selectedDate.toLocaleString('default', { month: 'long' })}
                     </h2>
-                    <span className="calendar-next" onClick={() => changeMonth(1)}></span>
+                    <span className="calendar-next button" onClick={() => changeMonth(1)}></span>
                 </div>
                 <div className="calendar-header">
                     {daysOfWeek.map(a => <span key={a} className="day-header">{a}.</span>)}
@@ -104,4 +108,15 @@ function Calendar(props: CalendarProps) {
         </div>);
 }
 
+function patchAttendance(data: AttendanceDto, meals: string[]): AttendanceDto {
+    const filledData = { ...data };
+    for (let meal of meals) {
+        if (filledData[meal] === undefined) {
+            filledData[meal] = { masked: false, present: 0 };
+        }
+    }
+    return filledData;
+}
+
 export default Calendar;
+export type { DayComponent, DayComponentProps, MealFetchFunction };

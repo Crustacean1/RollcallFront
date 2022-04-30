@@ -5,7 +5,7 @@ import { PreviewMode } from '../../Common/Types';
 
 interface MainPreviewProps {
     panelComponent: JSX.Element;
-    setMode: (mode: PreviewMode) => void;
+    setMode: (update: (mode: PreviewMode) => PreviewMode) => void;
     mode: PreviewMode;
 }
 
