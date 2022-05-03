@@ -10,6 +10,7 @@ import ChildDataPanel from './DataPanel/ChildDataPanel';
 import GroupDataPanel from './DataPanel/GroupDataPanel';
 
 import ChildDay from './Day/Child/ChildDay';
+import GroupDay from './Day/Group/GroupDay';
 
 import apiHandler from '../../Api/Api';
 import { AttendanceDto, AttendanceCountDto } from '../../Api/ApiTypes';
@@ -39,8 +40,12 @@ function MainPage(props: { nav: JSX.Element }) {
         }),
         [setMonthCount]);
 
-    const dayComponent = useCallback(
-        ((dayProps: DayComponentProps) => ChildDay({ targetId: _mode.childId, countUpdate: updateMonthCount, ...dayProps })),
+    const childComponent = useCallback(
+        (dayProps: DayComponentProps) => ChildDay({ targetId: _mode.childId, countUpdate: updateMonthCount, ...dayProps }),
+        [_mode, updateMonthCount]);
+
+    const groupComponent = useCallback(
+        (dayProps: DayComponentProps) => GroupDay({ targetId: _mode.groupId, countUpdate: updateMonthCount, ...dayProps }),
         [_mode, updateMonthCount]);
 
     const fetchFunction: MealFetchFunction = useCallback(
@@ -64,11 +69,16 @@ function MainPage(props: { nav: JSX.Element }) {
         <GroupDataPanel monthCount={_monthCount} setMonthCount={mealCounterReset} targetId={_mode.groupId} date={_selectedDate} /> :
         <ChildDataPanel monthCount={_monthCount} setMonthCount={mealCounterReset} targetId={_mode.childId} date={_selectedDate} />);
 
+    const getCalendarContext = () => {
+        return `${_mode.type}-${_mode.type === "Group" ? _mode.groupId : _mode.childId}-${_selectedDate.getMonth()}`;
+    }
+
     return <div className="main-component">
         {props.nav}
         <div className="main-content">
             <MainPreview panelComponent={dataPanel} setMode={setMode} mode={_mode} />
-            <Calendar SelectedDay={dayComponent} fetchFunction={fetchFunction} selectedDate={_selectedDate} setDate={setDate} />
+            <Calendar SelectedDay={_mode.type === "Group" ? groupComponent : childComponent} calendarContext={getCalendarContext()}
+                fetchFunction={fetchFunction} selectedDate={_selectedDate} setDate={setDate} />
         </div>
     </div>
 }

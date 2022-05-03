@@ -22,10 +22,15 @@
     min-width: 9vw;
     min-height: 150px;
     background-color: rgb(48, 48, 48);
-    border-bottom: 5px solid  rgb(20, 197, 182);
     margin: 5px;
     text-align: center;
     -moz-user-select: none;
     user-select: none;
     border-radius: 5px;
+}
+.calendar-day.child-day{
+    border-bottom: 5px solid  rgb(20, 197, 182);
+}
+.calendar-day.group-day{
+    border-bottom: 5px solid  rgb(197, 20, 103);
 }

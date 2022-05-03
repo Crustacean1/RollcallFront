@@ -14,23 +14,24 @@ import { useSession } from '../../../Common/Session';
 
 import './GroupList.css';
 
-interface GroupListProps {
-    date: MealDate;
-    targetId: number;
-    folded: boolean;
-
-    exit: () => void;
-}
-
-interface DailyChildSummary {
-    childId: number;
+interface ChildSummary {
     name: string;
     surname: string;
-    summary: AttendanceDto;
+    childId: number;
+    meals: AttendanceCountDto;
+}
+
+interface DailyGroupSummary {
+    masks: ChildAttendanceDto;
+    children: ChildSummary[];
+}
+
+interface DailySummary {
+    [groupName: string]: DailyGroupSummary;
 }
 
 interface ChildItemProps {
-    data: DailyChildSummary;
+    data: ChildSummary;
     date: MealDate;
 }
 
@@ -50,8 +51,9 @@ function ChildItem(props: ChildItemProps) {
             props.date.year, props.date.month, props.date.day));
     }
 
+
     const [_info, setMeal, updateMeal,] = useAttendanceInfo(
-        props.data.summary,
+        {},
         { getDailyAttendance: fetchDaysMeals, updateAttendance: updateDayMeals },
         (delta: AttendanceCountDto) => { });
 
@@ -65,17 +67,22 @@ function ChildItem(props: ChildItemProps) {
         }
     </tr>
 }
+interface GroupListProps {
+    date: MealDate;
+    targetId: number;
 
-function GroupList(props: GroupListProps) {
-    const [_children, setChildren] = useState<DailyChildSummary[]>([]);
+    exit: () => void;
+}
+
+function GroupList({ date, targetId, exit }: GroupListProps) {
+    const [_children, setChildren] = useState<DailySummary>({});
     const [_loading, setLoading] = useState(true);
 
     const _session = useSession();
 
     useEffect(() => {
         let isActive = true;
-        if (props.folded) { return; }
-        apiHandler.get<DailyChildSummary[]>(_session.token, "attendance", "group", "daily", ...apiHandler.toStringArray(props.date.year, props.date.month, props.date.day))
+        apiHandler.get<DailySummary>(_session.token, "attendance", "group", "childlist", ...apiHandler.toStringArray(targetId, date.year, date.month, date.day))
             .then((response) => {
                 if (!isActive) { return; }
                 setChildren(response);
@@ -85,15 +92,15 @@ function GroupList(props: GroupListProps) {
                 setLoading(false)
             })
 
-        return () => { setChildren(children => []); setLoading(true); isActive = false; }
-    }, [props.folded, props.date, props.targetId]);
+        return () => { setChildren(children => { return {} }); setLoading(true); isActive = false; }
+    }, [date, targetId]);
 
-    let renderFunc = useCallback((source: DailyChildSummary) => ChildItem({
+    let renderFunc = useCallback((source: ChildSummary) => ChildItem({
         data: source,
-        date: props.date,
-    }), [props.date]);
+        date: date,
+    }), [date]);
 
-    let childList = <BasicTable source={_children} loading={_loading} displayFunc={renderFunc}
+    let childList = <BasicTable source={[]} loading={_loading} displayFunc={renderFunc}
         class="group-list-table" height="50vh" headers={[{ "name": "name", "title": "Imię" },
         { "name": "surname", "title": "Nazwisko" },
         { "name": "breakfast", "title": "Śniadanie" },
@@ -102,10 +109,10 @@ function GroupList(props: GroupListProps) {
         ]} />
 
     let content = (<div className="group-list-container" onClick={e => e.stopPropagation()}>
-        <h2>{props.date.day}-{props.date.month}-{props.date.year}</h2>
+        <h2>{date.day}-{date.month}-{date.year}</h2>
         <Loading loader={<Loader size="200px" />} condition={!_loading} target={childList} />
     </div>);
-    return props.folded ? <></> : <Overlay class="" target={content} exit={props.exit} />
+    return <Overlay class="" target={content} exit={exit} />
 }
 
 export default GroupList;

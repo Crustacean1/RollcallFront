@@ -11,7 +11,7 @@
     animation-iteration-count: infinite;
     animation-timing-function: linear;
     animation-duration: 1s;
-    background-image: url('../../../public/images/loadingrec_white.png');
+    background-image: url('../../../public/images/loadingWheel.png');
     background-size: contain;
     margin: auto;
 }

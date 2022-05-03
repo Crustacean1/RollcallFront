@@ -33,7 +33,7 @@ function ChildDay({ countUpdate, targetId, date, attendance }: ChildDayProps) {
     }, [date, targetId, _session.token])
 
 
-    const [_mealAttendance, , updateMeals] = useAttendanceInfo(attendance,
+    const [_mealAttendance, updateMeals] = useAttendanceInfo(attendance,
         { getDailyAttendance: requestMeals, updateAttendance: requestAttendanceUpdate },
         countUpdate
     );
@@ -52,7 +52,7 @@ function ChildDay({ countUpdate, targetId, date, attendance }: ChildDayProps) {
     }, [_mealAttendance, date, updateMeals])
 
 
-    return <div className="calendar-day">
+    return <div className="calendar-day child-day">
         <ChildDayHeader date={date} meals={_mealAttendance} updateAttendance={(toggle: boolean) => updateMeals(MealNames, toggle)} />
         <div className="meal-container">
             {renderMeals()}

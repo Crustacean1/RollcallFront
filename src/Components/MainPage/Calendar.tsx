@@ -19,26 +19,29 @@ type MealFetchFunction = (token: string, date: Date) => Promise<AttendanceDto[]>
 
 interface CalendarProps {
     fetchFunction: MealFetchFunction;
-
     SelectedDay: DayComponent;
-
     selectedDate: Date;
     setDate: (date: Date) => void;
+    calendarContext: string;
 }
 
-function Calendar({ fetchFunction, SelectedDay, selectedDate, setDate }: CalendarProps) {
+function Calendar({ fetchFunction, SelectedDay, selectedDate, setDate, calendarContext }: CalendarProps) {
 
     const [_attendance, setAttendance] = useState<AttendanceDto[]>([]);
+    const [_currentDate, setCurrentDate] = useState<Date>(new Date("1999-01-01"));
+    const [_currentContext, setCurrentContext] = useState<string>("not-defined");
 
     const _session = useSession();
 
     useEffect(() => {
-        setAttendance([]);
         let isActive = true;
+
         fetchFunction(_session.token, selectedDate).then(
             (newAttendance) => {
                 if (isActive && newAttendance && newAttendance) {
                     setAttendance(newAttendance.map(a => patchAttendance(a, MealNames)));
+                    setCurrentDate(selectedDate);
+                    setCurrentContext(calendarContext);
                 }
             }, e => {
                 _session.invalidateSession();
@@ -47,8 +50,7 @@ function Calendar({ fetchFunction, SelectedDay, selectedDate, setDate }: Calenda
         return () => { isActive = false }
     }, [_session, selectedDate, fetchFunction, SelectedDay]);
 
-
-    const renderDay = (date: Date) => {
+    const renderDay = (date: Date, attendance: AttendanceDto) => {
         let dayKey = `${date.getDate()}-${date.getMonth()}`;
 
         if (date.getMonth() !== selectedDate.getMonth()) {
@@ -57,13 +59,13 @@ function Calendar({ fetchFunction, SelectedDay, selectedDate, setDate }: Calenda
         else if (date.getDay() === 6 || date.getDay() === 0) {
             return (<DisabledDay key={dayKey} date={new Date(date)} />);
         }
-        else if (_attendance[date.getDate() - 1] === undefined) {
+        else if ((!attendance) || _currentContext !== calendarContext) {
             return (<LoadingDay key={dayKey} />);
         }
         return <SelectedDay
             key={`${date.getMonth() + 1}-${date.getDate()}`}
             date={{ year: date.getFullYear(), month: date.getMonth() + 1, day: date.getDate() }}
-            attendance={_attendance[date.getDate()]} />
+            attendance={attendance} />
     }
 
     let populateCalendar = () => {
@@ -76,7 +78,7 @@ function Calendar({ fetchFunction, SelectedDay, selectedDate, setDate }: Calenda
 
         for (; date.getMonth() !== nextMonth; date.setDate(date.getDate() + 1)) {
 
-            result.push(renderDay(date));
+            result.push(renderDay(date, _attendance[date.getDate()]));
         }
         return result;
     }

@@ -1,76 +1,64 @@
-type NonImplemented = void;
-export type { NonImplemented };
-
-/*import './Day.css';
+import '../Day.css';
 import { useCallback, useRef, useEffect } from 'react';
-import { Loading, Loader } from '../../Common/Loading';
-import { AttendanceApi, AttendanceDto } from '../../../Api/ApiTypes';
-import { MonthCount } from '../../MainPage/MainPage';
-import GroupMeal from '../Day/Group/GroupMeal';
-import GroupDayHeader from '../Day/Group/GroupHeader';
+import { Loading, Loader } from '../../../Common/Loading';
+import { MealDate, ChildAttendanceDto, AttendanceDto } from '../../../../Api/ApiTypes';
+import GroupMeal from '../../Day/Group/GroupMeal';
+import GroupDayHeader from '../../Day/Group/GroupHeader';
 
-import useAttendanceInfo from './AttendanceInfoHook';
-import {
-    MealContext,
-    DayContext,
-    MealNames,
-    DayDate,
-    DayInfo,
-    MealInfo,
-} from './DayTypes';
-
-type MonthCountUpdate = (update: (arg: MonthCount) => MonthCount) => void;
+import useAttendanceInfo from '../AttendanceInfoHook';
+import { MealNames, MonthCountUpdate } from '../DayTypes';
+import { useSession } from '../../../Common/Session';
+import apiHandler from '../../../../Api/Api';
 
 interface GroupDayProps {
     countUpdate: MonthCountUpdate;
-    apiHandler: AttendanceApi;
-    date: DayDate;
+    targetId: number;
+    date: MealDate;
     attendance: AttendanceDto;
 }
 
-function getMealChange(a: MealInfo, b: MealInfo) {
-    return (a.masked ? 0 : a.present) - (b.masked ? 0 : b.present);
-}
+function GroupDay({ countUpdate, targetId, date, attendance }: GroupDayProps) {
 
-function GroupDay(props: GroupDayProps) {
 
-    let [_info, updateMeal, toggleMeals, refreshMeals] = useAttendanceInfo(props.attendance,
-        props.date,
-        props.apiHandler,
-        (info: MealInfo, update: boolean) => info.masked = update);
+    const _session = useSession();
 
-    const prevInfoRef = useRef<DayInfo>(_info);
+    const requestMeals = useCallback((): Promise<AttendanceDto> => {
+        return apiHandler.get(_session.token, "attendance", "group", "daily",
+            ...apiHandler.toStringArray(targetId, date.year, date.month, date.day));
+    }, [date, targetId, _session.token]);
 
-    useEffect(() => {
-        props.countUpdate(a => {
-            return {
-                breakfast: a.breakfast + getMealChange(_info.breakfast, prevInfoRef.current.breakfast),
-                dinner: a.dinner + getMealChange(_info.dinner, prevInfoRef.current.dinner),
-                desert: a.desert + getMealChange(_info.desert, prevInfoRef.current.desert),
-            }
-        })
-        prevInfoRef.current = _info;
-    }, [_info])
+    const requestAttendanceUpdate = useCallback((attendance: ChildAttendanceDto): Promise<ChildAttendanceDto> => {
+        return apiHandler.post(attendance, _session.token, "attendance", "group",
+            ...apiHandler.toStringArray(targetId, date.year, date.month, date.day))
+    }, [date, targetId, _session.token])
 
-    let renderMeals = useCallback(() => {
+    const [_mealAttendance, , updateMeal, refreshMeals] = useAttendanceInfo(attendance,
+        { getDailyAttendance: requestMeals, updateAttendance: requestAttendanceUpdate },
+        countUpdate);
+
+    const renderMeals = () => {
         let result: JSX.Element[] = [];
 
         for (let mealName of MealNames) {
             result.push(<GroupMeal
                 key={`${mealName}`}
-                info={_info[mealName]}
-                updateAttendance={(update: boolean) => updateMeal(mealName, update)}
-                date={props.date} />);
+                state={_mealAttendance[mealName]}
+                updateAttendance={(update: boolean) => updateMeal([mealName], update)}
+                date={date} />);
         }
         return result;
-    }, [_info, props])
+    };
 
-    return <div className="calendar-day">
-        {<GroupDayHeader date={props.date} info={_info} refreshAttendance={refreshMeals} updateAttendance={toggleMeals} />}
+    const toggleMeals = useCallback((update: boolean) => {
+        updateMeal(MealNames, update);
+    }, [updateMeal]);
+
+    return <div className="calendar-day group-day">
+        {<GroupDayHeader date={date} info={_mealAttendance} targetId={targetId} refreshAttendance={refreshMeals} updateAttendance={toggleMeals} />}
         <div className="meal-container">
             {renderMeals()}
         </div>
     </div>
 }
 
-export default GroupDay;*/
+export default GroupDay;

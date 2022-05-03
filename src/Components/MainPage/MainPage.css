@@ -3,9 +3,11 @@
     flex-flow: column nowrap;
 }
 .main-content{
+    height: calc(100vh - 75px);
     width: 100%;
-    padding-top: 50px;
-    display: flex;
-    justify-content: space-around;
-    flex-flow: row nowrap;
+    display: grid;
+    position: relative;
+    grid-template-columns: 25% 75%;
+    align-items: center;
+    justify-items: center;
 }

@@ -6,7 +6,8 @@
     display: flex;
     flex-flow: column nowrap;
     justify-content: flex-end;
-    height: 90vh;
+    height: calc(95vh - 125px);
+
 }
 .child-preview{
     overflow: hidden;
