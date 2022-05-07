@@ -1,0 +1,53 @@
+.group-eraser {
+    background-color: red;
+    width: 20px;
+    height: 20px;
+    border-radius: 5px;
+    display: inline-block;
+}
+
+.group-eraser:hover {
+    cursor: pointer;
+    background-color: rgb(250, 68, 68);
+}
+
+.group-browser {
+    width: 100%;
+}
+
+.group-browser th {
+    background-color: rgb(202, 202, 202);
+}
+
+.group-page {
+    flex: 1;
+    margin: 5vw;
+    background-color: rgb(250, 68, 68);
+    display: flex;
+    flex-flow: column;
+    justify-content: space-around;
+    align-items: center;
+    border-radius: 15px;
+    height: 75%;
+}
+.group-form{
+    width: 100%;
+    background-color:rgb(82, 82, 82);
+    display: flex;
+    justify-content: space-around;
+}
+.group-form input{
+    flex: 3;
+    margin: 10px;
+}
+.group-form .button{
+    margin-left: 10px;
+    margin-right: 10px;
+}
+.group-page>*{
+    margin: 20px;
+}
+.inner-group-page{
+    min-width: 30em;
+    width: 75%;
+}

@@ -7,6 +7,7 @@ import LoadingDay from './Day/LoadingDay';
 import DisabledDay from './Day/DisabledDay';
 
 import { useSession } from '../Common/Session';
+import Button from '../Common/Button';
 
 interface DayComponentProps {
     date: MealDate,
@@ -51,7 +52,7 @@ function Calendar({ fetchFunction, SelectedDay, selectedDate, setDate, calendarC
     }, [_session, selectedDate, fetchFunction, SelectedDay]);
 
     const renderDay = (date: Date, attendance: AttendanceDto) => {
-        let dayKey = `${date.getDate()}-${date.getMonth()}`;
+        let dayKey = `${date.getDate()}-${date.getMonth()}-${date.getFullYear()}`;
 
         if (date.getMonth() !== selectedDate.getMonth()) {
             return (<div key={dayKey} className="empty-day"></div>);
@@ -94,11 +95,11 @@ function Calendar({ fetchFunction, SelectedDay, selectedDate, setDate, calendarC
         <div className="calendar-container">
             <div className="inner-calendar">
                 <div className="calendar-navigation">
-                    <span className="calendar-prev button" onClick={() => changeMonth(-1)}></span>
+                    <Button onPress={() => changeMonth(-1)} text="Poprzedni" className="calendar-button" />
                     <h2 className="calendar-date">
                         {selectedDate.getFullYear()} {selectedDate.toLocaleString('default', { month: 'long' })}
                     </h2>
-                    <span className="calendar-next button" onClick={() => changeMonth(1)}></span>
+                    <Button onPress={() => changeMonth(1)} text="Następny" className="calendar-button" />
                 </div>
                 <div className="calendar-header">
                     {daysOfWeek.map(a => <span key={a} className="day-header">{a}.</span>)}

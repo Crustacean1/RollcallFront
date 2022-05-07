@@ -1,0 +1,18 @@
+.button{
+    display: inline-block;
+    line-height: normal;
+    border-radius: 5px;
+    background-color:rgb(53, 53, 53);
+    color: white;
+    padding: 5px;
+    background-size: contain;
+
+    text-align: center;
+    vertical-align: middle;
+    margin: auto;
+    flex: 1;
+}
+.button:hover{
+    cursor: pointer;
+    background-color: rgb(34, 34, 34)
+}

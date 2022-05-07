@@ -21,10 +21,10 @@ function TableRow<T>(props: { source: T, displayFunc: (source: T) => JSX.Element
 }
 
 function BasicTable<T>(props: TableProps<T>) {
-    let [_sorting, setSorting] = useState("");
-    let [_sortDirection, setSortDirection] = useState(-1);
+    const [_sorting, setSorting] = useState("");
+    const [_sortDirection, setSortDirection] = useState(-1);
 
-    let sortString = (a: string, b: string) => {
+    const sortString = (a: string, b: string) => {
         if (a < b) {
             return _sortDirection;
         }
@@ -34,16 +34,17 @@ function BasicTable<T>(props: TableProps<T>) {
         return -_sortDirection;
     }
 
-    let body = _sorting === "" ?
+    const body = _sorting === "" ?
         (<tbody>
-            {props.source.map((a,index) => <TableRow source={a} displayFunc={props.displayFunc} key={index} />)}
+            {props.source.map((a, index) => <TableRow source={a} displayFunc={props.displayFunc} key={index} />)}
         </tbody>) :
         (<tbody>
             {props.source.sort(
                 (a, b) => sortString((a as any)[_sorting], (b as any)[_sorting]))
-                .map((a,index) => <TableRow source={a} displayFunc={props.displayFunc} key={index} />)}
+                .map((a, index) => <TableRow source={a} displayFunc={props.displayFunc} key={index} />)}
         </tbody>)
-    let setSortingColumn = (name: string) => {
+
+    const setSortingColumn = (name: string) => {
         if (_sorting === name) {
             setSortDirection(-_sortDirection);
         }
@@ -52,7 +53,7 @@ function BasicTable<T>(props: TableProps<T>) {
             setSortDirection(-1);
         }
     }
-    let activeHeaderName = _sortDirection === -1 ? "sort-desc" : "sort-asc";
+    const activeHeaderName = _sortDirection === -1 ? "sort-desc" : "sort-asc";
 
     return (<div style={{
         "maxHeight": `${props.height}`,
@@ -62,12 +63,12 @@ function BasicTable<T>(props: TableProps<T>) {
             className={`basic-table`}>
             <thead>
                 < tr >
-                    {props.headers.map((header,index) => header.name !== "" ?
+                    {props.headers.map((header, index) => header.name !== "" ?
                         <th key={index} onClick={e => setSortingColumn(header.name)} className={"active-header " + (_sorting === header.name ? activeHeaderName : "")}>{header.title}</th> :
                         <th key={index} className="active-header">{header.title}</th>)}
                 </ tr>
             </thead>
-            {<Loading condition={!props.loading} target={body} loader={<TableLoader span={props.headers.length} size="100px" />} />}
+            {<Loading condition={true} target={body} loader={<TableLoader span={props.headers.length} size="100px" />} />}
         </table >
     </div>);
 }

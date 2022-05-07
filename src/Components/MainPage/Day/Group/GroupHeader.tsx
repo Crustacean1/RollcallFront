@@ -8,7 +8,8 @@ import {
     MealUpdateFunction
 } from '../DayTypes';
 
-import GroupList from '../GroupList/GroupList';
+import GroupOverlay from '../GroupList/GroupOverlay';
+import Button from '../../../Common/Button';
 
 interface GroupDayHeaderProps {
     info: DayMealState;
@@ -20,7 +21,7 @@ interface GroupDayHeaderProps {
 
 function GroupDayHeader(props: GroupDayHeaderProps) {
     let checked = false;
-    let [_folded, setFolded] = useState(true);
+    let [_active, setActive] = useState(false);
 
     for (let meal of MealNames) {
         if (props.info[meal].masked) {
@@ -35,14 +36,14 @@ function GroupDayHeader(props: GroupDayHeaderProps) {
 
     let onExit = () => {
         props.refreshAttendance();
-        setFolded(true);
+        setActive(false);
     }
 
     return <h4>
-        <span className="group-list-button" onClick={e => setFolded(false)}>...</span>
+        <Button text="..." onPress={() => setActive(true)} />
         <label htmlFor={headerId}>{props.date.day}</label>
         {checkbox}
-        <GroupList date={props.date} targetId={props.targetId} folded={_folded} exit={onExit} />
+        <GroupOverlay date={props.date} targetId={props.targetId} active={_active} exit={onExit} />
     </h4>
 }
 

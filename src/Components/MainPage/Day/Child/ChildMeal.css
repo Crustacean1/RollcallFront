@@ -14,6 +14,6 @@
     text-align: left;
     display:inline-block;
 }
-.calendar-day h4>span,input,label:hover{
+.calendar-day h4>span, .calendar-day input,.calendar-day label:hover{
     cursor: pointer;
 }

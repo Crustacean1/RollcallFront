@@ -26,7 +26,7 @@ function TokenManager({ children }: { children: React.ReactNode }) {
 
     const startSession = (newToken: string) => { setToken(newToken); saveTokenToStorage(newToken); setValid(true); };
     const invalidateSession = () => { setValid(false); };
-    const endSession = () => { setToken(""); setValid(false); }
+    const endSession = () => { setToken(""); saveTokenToStorage(""); setValid(false); }
 
     return (
         <LoginSession.Provider value={{ token, valid, startSession, invalidateSession, endSession }}>

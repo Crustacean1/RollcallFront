@@ -5,8 +5,9 @@ import { useSession } from '../Common/Session';
 import './GroupPage.css';
 
 import BasicTable from '../Common/Table';
+import Button from '../Common/Button';
 
-function GroupPage(props: { nav: JSX.Element }) {
+function GroupPage() {
     const [_groups, setGroups] = useState<GroupDto[]>([]);
     const [_currentName, setCurrentName] = useState("Homary");
     const [_loading, setLoading] = useState(true);
@@ -31,22 +32,23 @@ function GroupPage(props: { nav: JSX.Element }) {
         })
     }
 
-    let groupDisplay = (group: GroupDto) => { return <tr><td>{group.name}</td><td><span className="group-eraser"></span></td></tr> }
+    let groupDisplay = (group: GroupDto) => { return <tr><td>{group.name}</td><td><Button text="✕" textColor="red" onPress={() => {alert("Usuwanie grup jest zablokowane")}}/></td></tr> }
 
-    return <div className="main-component">
-        {props.nav}
+    return <div className="group-page">
         <h1>Dodaj nową grupe:</h1>
-        <BasicTable
-            headers={[{ name: "name", title: "Grupa" }, { name: "", title: "" }]}
-            source={_groups}
-            height="30vh"
-            loading={_loading}
-            class="group-browser"
-            displayFunc={groupDisplay}
-        />
-        <div className="child-form">
-            <input type="text" value={_currentName} onChange={(e) => setCurrentName(e.currentTarget.value)} />
-            <span className="add-button" onClick={() => addGroup(_currentName)}>Dodaj</span>
+        <div className="inner-group-page">
+            <BasicTable
+                headers={[{ name: "name", title: "Nazwa grupy" }, { name: "", title: "" }]}
+                source={_groups}
+                height="30vh"
+                loading={_loading}
+                class="group-browser"
+                displayFunc={groupDisplay}
+            />
+            <div className="group-form">
+                <input type="text" value={_currentName} onChange={(e) => setCurrentName(e.currentTarget.value)} />
+                <Button text="Dodaj" onPress={() => addGroup(_currentName)} />
+            </div>
         </div>
     </div>
 }

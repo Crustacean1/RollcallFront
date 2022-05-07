@@ -1,10 +1,20 @@
 import { useEffect, useState } from 'react';
 import apiHandler from '../../../../Api/Api';
-import { MealDate, AttendanceCountDto, ChildAttendanceDto } from '../../../../Api/ApiTypes';
+import { MealDate, AttendanceDto, AttendanceCountDto, ChildAttendanceDto } from '../../../../Api/ApiTypes';
 import { useSession } from '../../../Common/Session';
 import GroupList from './GroupList';
+import Overlay from '../../../Common/Overlay';
+import { Loading, Loader } from '../../../Common/Loading';
+import { MealNames } from '../DayTypes';
+import './GroupOverlay.css';
 
 interface ChildSummary {
+    name: string;
+    surname: string;
+    childId: number;
+    meals: AttendanceDto;
+}
+interface ChildSummaryDto {
     name: string;
     surname: string;
     childId: number;
@@ -12,44 +22,94 @@ interface ChildSummary {
 }
 
 interface DailyGroupSummary {
-    masks: ChildAttendanceDto;
     groupId: number;
+    groupName: string;
     children: ChildSummary[];
 }
 
-interface DailySummary {
-    [groupName: string]: DailyGroupSummary;
+interface DailyGroupSummaryDto {
+    groupId: number;
+    groupName: string;
+    masks: ChildAttendanceDto;
+    children: ChildSummaryDto[];
+}
+
+interface DailySummary<T> {
+    groups: T[];
 }
 
 interface GroupOverlayProps {
     targetId: number;
     date: MealDate;
     active: boolean;
+    exit: () => void;
 }
 
-function GroupOverlay({ targetId, date }: GroupOverlayProps) {
-    const [_attendanceSummary, setAttendanceSummary] = useState<DailySummary>({});
+const mergeMealsWithMasks = (mealsToMerge: AttendanceCountDto, masksToMerge: ChildAttendanceDto) => {
+    let attendance: AttendanceDto = {};
+    if (masksToMerge === undefined || mealsToMerge === undefined) {
+        console.log(mealsToMerge);
+        console.log(masksToMerge);
+        alert("Wystąpił błąd, (mergeMealsWithMasks), skonsultuj się z administratorem");
+        return {};
+    }
+    for (let meal of MealNames) {
+        attendance[meal] = {
+            present: (mealsToMerge[meal] !== undefined ? mealsToMerge[meal] : 0),
+            masked: (masksToMerge[meal] !== undefined ? masksToMerge[meal] : false)
+        };
+    }
+    return attendance;
+}
+
+const patchSummaryDto = (response: DailyGroupSummaryDto[]) => {
+    return response.map(r => {
+        return {
+            groupId: r.groupId,
+            groupName: r.groupName,
+            children: r.children.map(child => {
+                return {
+                    name: child.name,
+                    surname: child.surname,
+                    childId: child.childId,
+                    meals: mergeMealsWithMasks(child.meals, r.masks)
+                }
+            })
+        }
+    })
+}
+
+function GroupOverlay({ targetId, date, active, exit }: GroupOverlayProps) {
+    const [_attendanceSummary, setAttendanceSummary] = useState<DailySummary<DailyGroupSummary>>({ groups: [] });
+    const [_loading, setLoading] = useState(true);
     const _session = useSession();
+
 
     useEffect(() => {
         let isActive = true;
-        apiHandler.get<DailySummary>(_session.token, "attendance", "group", "dailylist", ...apiHandler.toStringArray(targetId, date.year, date.month, date.day))
-            .then((response) => {
-                if (isActive) {
-                    setAttendanceSummary(response);
-                }
-            })
+        setLoading(true);
+        if (active) {
+            apiHandler.get<DailyGroupSummaryDto[]>(_session.token, "attendance", "group", "childlist", ...apiHandler.toStringArray(targetId, date.year, date.month, date.day))
+                .then((response) => {
+                    if (isActive) {
+                        const patchedResponse = patchSummaryDto(response);
+                        setAttendanceSummary({ groups: patchedResponse });
+                        setLoading(false);
+                    }
+                })
+        }
         return () => { isActive = false; }
-    }
-    )
-    const result: DailyGroupSummary[] = [];
-    for (let groupName in _attendanceSummary) {
-        result.push(_attendanceSummary[groupName])
-    }
+    }, [active])
 
-    return <div className="group-overlay">{
-        result.map(r => <GroupList date={date} targetId={0} exit={() => { }} />)
-    }</div>
+    const groupList = _attendanceSummary.groups.map(s => <GroupList key={`group-${s.groupName}`} date={date} summary={s} exit={() => { }} />);
+    const overlay = <Overlay class="" target={
+        <div className="group-overlay">
+            <Loading loader={<Loader size={"100px"} />} condition={!_loading} target={<div className="inner-group-overlay">{groupList}</div>} />
+        </div>
+    } exit={exit} />
+
+    return active ? overlay : <></>;
 }
 
 export default GroupOverlay;
+export type { DailyGroupSummary, ChildSummary, DailySummary };

@@ -23,6 +23,6 @@
     background-color:brown;
 }
 
-.children-list input:hover{
+.children-list label:hover{
     cursor:pointer;
 }

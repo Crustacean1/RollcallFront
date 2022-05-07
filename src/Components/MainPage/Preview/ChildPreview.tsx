@@ -23,7 +23,7 @@ function ChildItem(props: { name: string, surname: string, default: ChildAttenda
     </tr>
 }
 
-function ChildPreview(props: ChildPreviewProps) {
+function ChildPreview({ mode, setMode }: ChildPreviewProps) {
     const [_children, setChildren] = useState<ChildDto[]>([]);
     const [_loaded, setLoaded] = useState(false);
 
@@ -31,9 +31,9 @@ function ChildPreview(props: ChildPreviewProps) {
 
     useEffect(() => {
         let active = true;
-        if (props.mode.type !== "Child") {
+        if (mode.type !== "Child") {
             setLoaded(false);
-            fetchApi.get<ChildDto[]>(_session.token, "child")
+            fetchApi.get<ChildDto[]>(_session.token, "child", "group", ...fetchApi.toStringArray(mode.groupId))
                 .then((children) => {
                     if (active) {
                         setChildren(children);
@@ -45,10 +45,10 @@ function ChildPreview(props: ChildPreviewProps) {
                 })
         }
         return () => { active = false; }
-    }, [props.mode])
+    }, [mode, _session])
 
     let selectChild = (childId: number) => {
-        props.setMode(mode => {return { "type": "Child", "groupId": props.mode.groupId, "childId": childId }});
+        setMode(mode => { return { "type": "Child", "groupId": mode.groupId, "childId": childId } });
     }
 
     let displayFunc = (child: ChildDto) => ChildItem({ name: child.name, surname: child.surname, default: child.defaultAttendance, setMode: () => { selectChild(child.id) } });

@@ -1,0 +1,15 @@
+.group-overlay {
+    background-color: rgb(179, 179, 179);
+    color: black;
+    border-radius: 20px;
+    padding: 20px;
+}
+
+.inner-group-overlay {
+    display: flex;
+    justify-content: space-around;
+}
+
+.group-overlay {
+    z-index: 1;
+}

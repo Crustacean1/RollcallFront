@@ -11,15 +11,18 @@ interface LoginPageProps {
 }
 interface FieldProps {
     setValue: (value: string) => void;
+    logIn: () => void
     label: string;
     value: string
+    fieldType: string;
 }
 
-function Field(props: FieldProps) {
+function Field({ setValue, logIn, label, value, fieldType }: FieldProps) {
+    const onEnter = (event: React.KeyboardEvent) => { if (event.key === "Enter" && fieldType === "password") { logIn(); } }
     return <div className="login-field">
-        <label htmlFor={props.label + "-field"}>{props.label}</label>
-        <input type={props.label === "Hasło" ? "password" : "text"} id={props.label + "-field"} value={props.value}
-            onChange={(e) => props.setValue(e.currentTarget.value)} placeholder={props.label} />
+        <label htmlFor={label + "-field"}>{label}</label>
+        <input type={fieldType} id={label + "-field"} value={value} onKeyDown={onEnter}
+            onChange={(e) => setValue(e.currentTarget.value)} placeholder={label} />
     </div>
 }
 
@@ -34,7 +37,7 @@ function LoginPage(props: LoginPageProps) {
 
     const tryLogin = () => {
         setLoading(true);
-        apiHandler.sendRequest<JWToken>("POST", { "Login": login, "Password": password }, "token", "user").then(
+        apiHandler.post<JWToken>({ "Login": login, "Password": password }, "blank_token", "user").then(
             (value: JWToken) => {
                 setLoading(false);
                 _session.startSession(value.token);
@@ -52,8 +55,8 @@ function LoginPage(props: LoginPageProps) {
     let content = (
         <div className="login-panel">
             <h3>Zaloguj się:</h3>
-            <Field label="Login" setValue={setLogin} value={login} />
-            <Field label="Hasło" setValue={setPassword} value={password} />
+            <Field label="Login" fieldType="text" logIn={tryLogin} setValue={setLogin} value={login} />
+            <Field label="Hasło" fieldType="password" logIn={tryLogin} setValue={setPassword} value={password} />
             <button className="login-button" onClick={tryLogin}>Zaloguj</button>
         </div>)
 

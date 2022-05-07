@@ -18,7 +18,16 @@ function useAttendanceInfo(sourceDto: AttendanceDto,
     const [_mealState, setMealState] = useState<DayMealState>(getStateFromDto(sourceDto));
 
     useEffect(() => {
-        setMealState(getStateFromDto(sourceDto));
+        let shouldUpdate = false;
+        for (let meal in sourceDto) {
+            if (sourceDto[meal].masked !== _mealState[meal].masked || sourceDto[meal].present !== _mealState[meal].present) {
+                shouldUpdate = true;
+                break;
+            }
+        }
+        if (shouldUpdate) {
+            setMealState(getStateFromDto(sourceDto));
+        }
     }, [sourceDto])
 
 
@@ -70,7 +79,14 @@ function useAttendanceInfo(sourceDto: AttendanceDto,
         for (let meal of MealNames) { mealsToRefresh[meal] = false; }
         setMealState(state => startLoadingMeals(state, mealsToRefresh))
         api.getDailyAttendance().then((response) => {
-            setMealState(info => readRefreshedMeals(info, response));
+            let oldState = {};
+            let newState = {};
+            setMealState(info => {
+                oldState = { ...info };
+                newState = readRefreshedMeals(info, response);
+                return newState;
+            });
+            updateCallback(getDelta(oldState, newState));
         }, (e) => { setMealState(info => setFailedMeals(info)) });
     }
 
@@ -114,9 +130,12 @@ function readUpdatedMeals(info: DayMealState, updates: ChildAttendanceDto, updat
 
 function readRefreshedMeals(info: DayMealState, update: AttendanceDto) {
     const newInfo = copyMealState(info);
-    for (let meal in update) {
-        newInfo[meal].present = update[meal].present;
-        newInfo[meal].masked = update[meal].masked;
+    const defaultAttendance = { masked: false, present: 0 };
+    for (let meal of MealNames) {
+        if (update[meal] === undefined) {
+            update[meal] = defaultAttendance;
+        }
+        newInfo[meal] = { name: meal as MealName, present: update[meal].present, masked: update[meal].masked, loading: false };
     }
     return newInfo;
 }

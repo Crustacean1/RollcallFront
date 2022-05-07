@@ -1,4 +1,4 @@
-.calendar-day h4>label,input,span :hover{
+.calendar-day label:hover, .calendar-day input:hover{
     cursor:pointer;
 }
 .calendar-day h4{

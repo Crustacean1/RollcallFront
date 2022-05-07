@@ -8,6 +8,7 @@ import '../Common/Table';
 import BasicTable from '../Common/Table';
 import { MealName } from '../MainPage/Day/DayTypes';
 import { useSession } from '../Common/Session';
+import Button from '../Common/Button';
 
 
 function ChildrenList(props: { newest: number }) {
@@ -16,17 +17,27 @@ function ChildrenList(props: { newest: number }) {
 
     const _session = useSession();
 
-    useEffect(() => {
+    let isActive = true;
+
+    const updateChildren = () => {
+        setLoading(true);
         setChildren([]);
         apiHandler.get<ChildDto[]>(_session.token, "child", "group", ...apiHandler.toStringArray(0))
             .then(children => {
-                setChildren(children);
-                setLoading(false);
+                if (isActive) {
+                    setChildren(children);
+                    setLoading(false);
+                }
             })
+    }
+
+    useEffect(() => {
+        updateChildren();
+        return () => { isActive = false; }
     }, [props.newest]);
 
-    let changeAttendance = (childId: number, mealName: string, value: boolean) => {
-        apiHandler.post<ChildAttendanceDto>({ name: mealName, present: value }, _session.token, "child", ...apiHandler.toStringArray(childId))
+    const changeAttendance = (childId: number, mealName: string, value: boolean) => {
+        apiHandler.patch<ChildAttendanceDto>({ [mealName]: value }, _session.token, "child", ...apiHandler.toStringArray(childId))
             .then(response => {
                 let newChildren: ChildDto[] = Object.assign([], _children);
                 let child = newChildren.find(c => c.id === childId);
@@ -38,6 +49,16 @@ function ChildrenList(props: { newest: number }) {
                 }
             })
     }
+    const removeChild = (childName: string, childSurname: string, childId: number) => {
+        let remove = window.confirm(`Zamierzasz usunąć ucznia: '${childName} ${childSurname}', operacja ta jest nieodwracalna, jesteś pewna?`);
+        if (remove !== true) {
+            return;
+        }
+        apiHandler.delete(_session.token, "child", ...apiHandler.toStringArray(childId))
+            .then(() => {
+                updateChildren();
+            });
+    }
 
     let renderMeal = (childId: number, meal: string, value: boolean) => <input type="checkbox" checked={(value === true)} onChange={(e) => changeAttendance(childId, meal, e.currentTarget.checked)} />
     let renderChild = (child: ChildDto) => {
@@ -48,7 +69,8 @@ function ChildrenList(props: { newest: number }) {
             <td>{renderMeal(child.id, "breakfast", child.defaultAttendance.breakfast)}</td>
             <td>{renderMeal(child.id, "dinner", child.defaultAttendance.dinner)}</td>
             <td>{renderMeal(child.id, "desert", child.defaultAttendance.desert)}</td>
-            <td><span className="child-eraser"></span></td>
+            <td><Button text="✕" textColor="red" onPress={() => { removeChild(child.name, child.surname, child.id) }} /></td>
+            <td><Button text="..." onPress={() => { }} /></td>
         </tr>
     }
 
@@ -58,6 +80,7 @@ function ChildrenList(props: { newest: number }) {
     { name: "", title: "Śniadanie" },
     { name: "", title: "Obiad" },
     { name: "", title: "Deser" },
+    { name: "", title: "" },
     { name: "", title: "" }]}
         source={_children}
         displayFunc={renderChild}

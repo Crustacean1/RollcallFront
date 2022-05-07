@@ -2,7 +2,7 @@
     width: 100%;
     flex:5;
     background-color: rgb(132, 165, 132);
-
+    height: 70%;
 }
 .child-preview table{
     width: 100%;

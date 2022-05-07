@@ -5,6 +5,7 @@ import './SummaryPage.css';
 import { AttendanceCountDto } from '../../Api/ApiTypes';
 import { useSession } from '../Common/Session';
 import { MealNames } from '../MainPage/Day/DayTypes';
+import Button from '../Common/Button';
 
 interface SummaryHeaderProps {
     year: number;
@@ -17,28 +18,29 @@ interface SummaryHeaderProps {
 interface ChildAttendanceSummary {
     name: string;
     surname: string;
+    childId: number;
     groupName: string;
-    summary: AttendanceCountDto;
+    meals: AttendanceCountDto;
 }
 
 function SummaryHeader(props: SummaryHeaderProps) {
     const _session = useSession();
 
     let extend = () => {
-        apiHandler.sendRequest<{ updated: number }>("POST", {}, _session.token, "attendance", "group", "extend", ...apiHandler.toStringArray(props.year, props.month))
+        apiHandler.post<number>({}, _session.token, "attendance", "group", "extend", ...apiHandler.toStringArray(props.year, props.month))
             .then((response) => {
                 props.refresh();
-                alert("Przedłużono " + response.updated + " umów")
+                alert("Przedłużono " + response + " umów")
             })
     }
 
     return <div className="summary-header">
         <div className="summary-navigation">
-            <span className="prev-summary" onClick={props.prevMonth}></span>
+            <Button text="poprzedni" onPress={props.prevMonth} />
             <h1>Podsumowanie miesiąca: {props.year} - {props.month}</h1>
-            <span className="next-summary" onClick={props.nextMonth}></span>
+            <Button text="następny" onPress={props.nextMonth} />
         </div>
-        <span className="summary-extend-button" onClick={extend}>Przedłuż obecność</span>
+        <Button text="Przedłuż obecność" onPress={extend} />
     </div>
 }
 
@@ -49,31 +51,28 @@ function SummaryPage(props: { nav: JSX.Element }) {
 
     const _session = useSession();
 
-    let refresh = useCallback((isActive: boolean) => {
+    const refresh = useCallback(() => {
         setLoading(true);
         setChildren([]);
-        apiHandler.sendRequest<ChildAttendanceSummary[]>("GET", {}, _session.token, "attendance", "group", "summary",
-            ...apiHandler.toStringArray(_date.getFullYear(), _date.getMonth() + 1))
+        apiHandler.get<ChildAttendanceSummary[]>(_session.token, "attendance", "group", "childlist",
+            ...apiHandler.toStringArray(0, _date.getFullYear(), _date.getMonth() + 1))
             .then((response) => {
-                if (!isActive) { return; }
                 setChildren(response);
                 setLoading(false);
             }, (status) => {
                 alert("Error: In SummaryPage: " + status);
             })
-    }, [_date]);
+    }, [_date, _session]);
 
     useEffect(() => {
-        let isActive = true;
-        refresh(isActive);
-        return () => { isActive = false; }
-    }, [_date, refresh])
+        refresh();
+    }, [refresh])
 
     let displayChild = (child: ChildAttendanceSummary) => (<tr>
         <td>{child.groupName}</td>
         <td>{child.name}</td>
         <td>{child.surname}</td>
-        {MealNames.map(n => <td>{child.summary[n]}</td>)}
+        {MealNames.map(n => <td>{child.meals[n]}</td>)}
     </tr>);
 
     let changeMonth = (dir: number) => {
@@ -85,7 +84,7 @@ function SummaryPage(props: { nav: JSX.Element }) {
 
     return <div className="summary-page">
         {props.nav}
-        <SummaryHeader refresh={() => refresh(true)} year={_date.getFullYear()} month={_date.getMonth() + 1}
+        <SummaryHeader refresh={refresh} year={_date.getFullYear()} month={_date.getMonth() + 1}
             prevMonth={() => changeMonth(-1)} nextMonth={() => changeMonth(1)} />
         <BasicTable
             headers={[

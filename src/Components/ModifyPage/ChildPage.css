@@ -1,0 +1,58 @@
+.child-page{
+    flex: 1;
+    margin: 5vw;
+    background-color:rgb(122, 196, 119);
+    display: flex;
+    flex-flow: column;
+    justify-content: space-around;
+    align-items: center;
+    border-radius: 15px;
+    height: 75%;
+}
+.child-page>*{
+    margin: 20px;
+}
+.child-form{
+    background-color: rgb(82, 82, 82);
+    display: flex;
+    flex-flow: row nowrap;
+    width: 100%;
+    justify-content: space-around;
+}
+.child-form .button{
+ margin-left: 10px;
+ margin-right: 10px;
+}
+
+.child-form>div{
+    margin: 10px;
+    display: flex;
+    flex-flow: column wrap;
+    flex: 4;
+}
+.child-form>div>div{
+    justify-content: center;
+    display: flex;
+    flex-flow: row wrap;
+}
+.child-form>div>div>*{
+    margin: 5px;
+}
+.child-form label{
+    text-align:center;
+    padding: 5px;
+    user-select: none;
+}
+.child-form>label:hover, .child-form>input:hover{
+    cursor: pointer;
+}
+.child-name, .child-surname{
+    width: 100px;
+}
+.default-meal-selection{
+    display: flex;
+}
+.child-inner-page{
+    width: 75%;
+    min-width: 30em;
+}

@@ -5,9 +5,7 @@
 .main-content{
     height: calc(100vh - 75px);
     width: 100%;
-    display: grid;
-    position: relative;
-    grid-template-columns: 25% 75%;
+    display: flex;
     align-items: center;
-    justify-items: center;
+    justify-items: space-around;
 }

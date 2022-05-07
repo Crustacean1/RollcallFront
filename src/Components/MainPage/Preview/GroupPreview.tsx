@@ -21,7 +21,7 @@ function GroupPreview(props: GroupPreviewProps) {
 
     useEffect(() => {
         if (!_groups || _groups.length === 0) {
-            apiHandler.sendRequest<GroupDto[]>("GET", {}, _session.token, "group")
+            apiHandler.get<GroupDto[]>(_session.token, "group")
                 .then((newGroups) => {
                     var total = [{ "name": "Wszystkie", "id": 0 }];
                     setGroups(total.concat(newGroups));

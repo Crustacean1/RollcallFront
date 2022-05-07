@@ -46,7 +46,7 @@ function ChildDataPanel({ targetId, date, setMonthCount, monthCount }: DataPanel
     let meals: MealName[] = ["breakfast", "dinner", "desert"];
 
     let content = (<>
-        <h2>{_child?.name} {_child?.surname} : {_child?.groupName}</h2>
+        <h2>Uczeń: {_child?.name} {_child?.surname}, {_child?.groupName}</h2>
         <h3>W tym miesiącu:</h3>
         <div className="data-month-summary">
             {meals.map((m, i) => <h4 key={i}>{MealPluralLabels[m]}: {monthCount[m]}</h4>)}

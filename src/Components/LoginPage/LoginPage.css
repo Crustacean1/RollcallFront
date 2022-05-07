@@ -5,7 +5,7 @@
     display: flex;
     flex-flow: column wrap;
     justify-content: center;
-    align-items: center; 
+    align-items: center;
 }
 .outer-login-panel{
     min-width: 20%;

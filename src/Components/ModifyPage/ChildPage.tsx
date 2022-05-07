@@ -4,10 +4,11 @@ import apiHandler from '../../Api/Api';
 import { ChildAttendanceDto, GroupDto } from '../../Api/ApiTypes';
 import ChildrenList from './ChildrenList';
 import { useSession } from '../Common/Session';
+import Button from '../Common/Button';
 
 type MealName = "breakfast" | "dinner" | "desert";
 
-function ChildPage(props: { nav: JSX.Element }) {
+function ChildPage() {
 
     const [_groups, setGroups] = useState<GroupDto[]>([]);
 
@@ -38,7 +39,7 @@ function ChildPage(props: { nav: JSX.Element }) {
     let meals: MealName[] = ["breakfast", "dinner", "desert"];
 
     let addMeal = (name: string, value: boolean) => {
-        let newAttendance = Object.assign([], _currentAttendance);
+        let newAttendance = { ..._currentAttendance };
         newAttendance[name] = value;
         setAttendance(newAttendance);
     }
@@ -48,28 +49,39 @@ function ChildPage(props: { nav: JSX.Element }) {
             "name": _currentName,
             "surname": _currentSurname,
             "groupId": _currentGroupId,
-            "defaultAttendance": _currentAttendance
+            "defaultMeals": _currentAttendance
         }, _session.token, "child")
             .then((newChildId) => {
                 setNewId(newChildId);
+                setName("Karol");
+                setSurname("Wojtyła");
+                setAttendance({});
             })
     }
 
-    return <div className="main-component">
-        {props.nav}
-        <ChildrenList newest={_newChildId} />
-        <h1>Dodaj dzieciaka:</h1>
-        <div className="child-form">
-            <input className="child-name" type="text" value={_currentName} onChange={(e) => setName(e.currentTarget.value)} />
-            <input className="child-surname" type="text" value={_currentSurname} onChange={(e) => setSurname(e.currentTarget.value)} />
-            <select onChange={e => setCurrentId(parseInt(e.currentTarget.value))}>
-                {_groups.map(g => <option key={g.id} value={g.id}>{g.name}</option>)}
-            </select>
+    return <div className="child-page">
+        <h1>Dodaj nowego ucznia:</h1>
+        <div className="child-inner-page">
+            <ChildrenList newest={_newChildId} />
+            <div className="child-form">
+                <div>
+                    <div>
+                        <input className="child-name" type="text" value={_currentName} onChange={(e) => setName(e.currentTarget.value)} />
+                        <input className="child-surname" type="text" value={_currentSurname} onChange={(e) => setSurname(e.currentTarget.value)} />
+                        <select onChange={e => setCurrentId(parseInt(e.currentTarget.value))}>
+                            {_groups.map(g => <option key={g.id} value={g.id}>{g.name}</option>)}
+                        </select>
+                    </div>
+                    <div className="meal-selection">
+                        {meals.map(m => <div className="default-meal-selection" key={m}>
+                            <label htmlFor={m}>{mealNames[m as MealName]}</label><input id={m} type="checkbox" onClick={e => { addMeal(m, e.currentTarget.checked) }} />
+                        </div>)}
+                    </div>
+                </div>
 
-            {meals.map(m => <div className="default-meal-selection" key={m}>
-                <label htmlFor={m}>{mealNames[m as MealName]}</label><input id={m} type="checkbox" onClick={e => { addMeal(m, e.currentTarget.checked) }} />
-            </div>)}
-            <span className="add-button" onClick={e => submitChildren()}>Dodaj</span>
+                <Button text="Dodaj" onPress={() => submitChildren()} />
+
+            </div>
         </div>
     </div>
 }

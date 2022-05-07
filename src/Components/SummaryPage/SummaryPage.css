@@ -54,3 +54,8 @@
     cursor: pointer;
     box-shadow: 0 0 5px;
 }
+.child-summary{
+    width: 75%;
+    min-width: 30em;
+    margin: auto;
+}

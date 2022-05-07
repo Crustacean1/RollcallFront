@@ -5,7 +5,7 @@
     overflow: scroll;
     scrollbar-width: none;
     -ms-overflow-style: none;
-    max-height: calc(95vh - 135px);
+    max-height: calc(100% - 100px);
 }
 
 .calendar::-webkit-scrollbar {
@@ -13,12 +13,13 @@
 }
 
 .calendar-container {
+    height: calc(100vh - 100px);
     display: flex;
     flex-flow: row nowrap;
     align-items: center;
     justify-content: center;
-    flex: 1;
-    margin: 10px;
+    flex: 3;
+    margin: 0.5vw;
 }
 
 .calendar-container * {
@@ -47,20 +48,13 @@
     align-items: center;
 }
 
-.calendar-next {
-    background-image: url("../../../public/images/right_arrow.png");
+.calendar-navigation h2{
+    width: 10em;
 }
 
-.calendar-prev {
-    background-image: url("../../../public/images/left_arrow.png");
+span.calendar-button{
+    flex: 0;
 }
-
-.calendar-prev:hover,
-.calendar-next:hover {
-    cursor: pointer;
-    box-shadow: 0 0 5px;
-}
-
 
 .calendar .day-header {
     display: inline-block;
@@ -73,8 +67,7 @@
     flex-flow: column nowrap;
     align-items: center;
     background-color: rgb(109, 109, 109);
-    border-radius: 5px;
-    border: 2px solid rgb(0, 0, 0);
+    height: 100%;
 }
 
 .calendar-header {

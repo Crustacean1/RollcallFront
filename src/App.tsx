@@ -7,17 +7,17 @@ import {
 
 import LoginPage from './Components/LoginPage/LoginPage';
 import MainPage from './Components/MainPage/MainPage';
-import ChildPage from './Components/ChildPage/ChildPage';
-import GroupPage from './Components/GroupPage/GroupPage';
+import ModifyPage from './Components/ModifyPage/ModifyPage';
 import SummaryPage from './Components/SummaryPage/SummaryPage';
+import LogoutPage from './Components/LogoutPage/LogoutPage';
 import Navigation from './Components/Common/Navigation';
 import TokenManager, { AuthPage } from './Components/Common/Session';
 
 const navig = <Navigation nav={[
   { "name": "Obecność", "address": "/" },
-  { "name": "Dzieci", "address": "/children" },
-  { "name": "Grupy", "address": "/groups" },
-  { "name": "Podsumowanie", "address": "/summary" }]} />
+  { "name": "Modyfikuj", "address": "/modify" },
+  { "name": "Podsumowanie", "address": "/summary" },
+  { "name": "Wyloguj", "address": "/logout" }]} />
 
 function App() {
   return (
@@ -26,9 +26,9 @@ function App() {
         <Routes>
           <Route path="/login" element={<LoginPage />} />
           <Route path="/" element={<AuthPage><MainPage nav={navig} /></AuthPage>} />
-          <Route path="/groups" element={<GroupPage nav={navig} />} />
-          <Route path="/children" element={<ChildPage nav={navig} />} />
-          <Route path="/summary" element={<SummaryPage nav={navig} />} />
+          <Route path="/modify" element={<AuthPage><ModifyPage nav={navig} /></AuthPage>} />
+          <Route path="/summary" element={<AuthPage><SummaryPage nav={navig} /></AuthPage>} />
+          <Route path="/logout" element={<AuthPage><LogoutPage nav={navig} /></AuthPage>} />
         </Routes>
       </Router>
     </TokenManager>

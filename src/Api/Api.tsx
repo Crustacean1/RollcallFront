@@ -67,24 +67,32 @@ class Api {
     }
 
 
-    sendRequest<T>(method: string, object: any, token: string, ...path: string[]): Promise<T> {
+    sendQuery<T>(method: string, object: any, token: string, ...path: string[]): Promise<T> {
         return this.fetchFromApi(this.concatPath(...path), method, object, token)
             .then(data => this.handleStatus(data))
             .then(response => {
                 return response as Promise<T>
             })
     }
+    sendRequest(method: string, object: any, token: string, ...path: string[]): Promise<{}> {
+        return this.fetchFromApi(this.concatPath(...path), method, object, token)
+            .then(() => { return {} });
+    }
+
     post<T>(object: any, token: string, ...path: string[]): Promise<T> {
-        return this.sendRequest<T>("POST", object, token, ...path);
+        return this.sendQuery<T>("POST", object, token, ...path);
     }
     get<T>(token: string, ...path: string[]): Promise<T> {
-        return this.sendRequest<T>("GET", {}, token, ...path);
+        return this.sendQuery<T>("GET", {}, token, ...path);
     }
     put<T>(object: any, token: string, ...path: string[]): Promise<T> {
-        return this.sendRequest<T>("PUT", object, token, ...path);
+        return this.sendQuery<T>("PUT", object, token, ...path);
     }
     patch<T>(object: any, token: string, ...path: string[]): Promise<T> {
-        return this.sendRequest<T>("PATCH", object, token, ...path);
+        return this.sendQuery<T>("PATCH", object, token, ...path);
+    }
+    delete(token: string, ...path: string[]): Promise<{}> {
+        return this.sendRequest("DELETE", {}, token, ...path);
     }
 }
 
