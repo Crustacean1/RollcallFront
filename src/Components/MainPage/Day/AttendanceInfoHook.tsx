@@ -1,6 +1,6 @@
 import { AttendanceApi, AttendanceDto, AttendanceCountDto, ChildAttendanceDto } from '../../../Api/ApiTypes';
 import { DayMealState, MealState, MealNames, MealName } from './DayTypes';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 
 type MealSelectionFunction = (m: MealState) => boolean;
 type MealUpdateFunction = (m: MealState, u: boolean) => void;
@@ -15,21 +15,7 @@ function useAttendanceInfo(sourceDto: AttendanceDto,
     api: AttendanceApi,
     updateCallback: MealStateCallback): ReturnType {
 
-    const [_mealState, setMealState] = useState<DayMealState>(getStateFromDto(sourceDto));
-
-    useEffect(() => {
-        let shouldUpdate = false;
-        for (let meal in sourceDto) {
-            if (sourceDto[meal].masked !== _mealState[meal].masked || sourceDto[meal].present !== _mealState[meal].present) {
-                shouldUpdate = true;
-                break;
-            }
-        }
-        if (shouldUpdate) {
-            setMealState(getStateFromDto(sourceDto));
-        }
-    }, [sourceDto, _mealState])
-
+    const [_mealState, setMealState] = useState<DayMealState>(() => getStateFromDto(sourceDto));
 
     const updateMealArray = (update: ChildAttendanceDto): Promise<ChildAttendanceDto> => {
         setMealState(state => startLoadingMeals(state, update));

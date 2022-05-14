@@ -13,8 +13,8 @@ function ChildPage() {
     const [_groups, setGroups] = useState<GroupDto[]>([]);
 
     const [_currentGroupId, setCurrentId] = useState(0);
-    const [_currentName, setName] = useState("Karol");
-    const [_currentSurname, setSurname] = useState("Wojtyła");
+    const [_currentName, setName] = useState("Jan");
+    const [_currentSurname, setSurname] = useState("Nowak");
     const [_currentAttendance, setAttendance] = useState<ChildAttendanceDto>({});
 
     const [_newChildId, setNewId] = useState(0);
