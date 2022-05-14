@@ -32,7 +32,7 @@ function ChildPage() {
         return () => {
             active = false;
         }
-    }, []);
+    }, [_session]);
 
     let mealNames = { "breakfast": "Śniadanie", "dinner": "Obiad", "desert": "Deser" };
 

@@ -29,7 +29,6 @@ interface CalendarProps {
 function Calendar({ fetchFunction, SelectedDay, selectedDate, setDate, calendarContext }: CalendarProps) {
 
     const [_attendance, setAttendance] = useState<AttendanceDto[]>([]);
-    const [_currentDate, setCurrentDate] = useState<Date>(new Date("1999-01-01"));
     const [_currentContext, setCurrentContext] = useState<string>("not-defined");
 
     const _session = useSession();
@@ -41,7 +40,6 @@ function Calendar({ fetchFunction, SelectedDay, selectedDate, setDate, calendarC
             (newAttendance) => {
                 if (isActive && newAttendance && newAttendance) {
                     setAttendance(newAttendance.map(a => patchAttendance(a, MealNames)));
-                    setCurrentDate(selectedDate);
                     setCurrentContext(calendarContext);
                 }
             }, e => {
@@ -49,7 +47,7 @@ function Calendar({ fetchFunction, SelectedDay, selectedDate, setDate, calendarC
             });
 
         return () => { isActive = false }
-    }, [_session, selectedDate, fetchFunction, SelectedDay]);
+    }, [_session, selectedDate, fetchFunction, SelectedDay, calendarContext]);
 
     const renderDay = (date: Date, attendance: AttendanceDto) => {
         let dayKey = `${date.getDate()}-${date.getMonth()}-${date.getFullYear()}`;

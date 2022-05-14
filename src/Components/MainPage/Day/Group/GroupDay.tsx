@@ -1,6 +1,5 @@
 import '../Day.css';
-import { useCallback, useRef, useEffect } from 'react';
-import { Loading, Loader } from '../../../Common/Loading';
+import { useCallback} from 'react';
 import { MealDate, ChildAttendanceDto, AttendanceDto } from '../../../../Api/ApiTypes';
 import GroupMeal from '../../Day/Group/GroupMeal';
 import GroupDayHeader from '../../Day/Group/GroupHeader';

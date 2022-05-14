@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import apiHandler from '../../Api/Api';
 import { GroupDto } from '../../Api/ApiTypes';
 import { useSession } from '../Common/Session';
@@ -14,17 +14,16 @@ function GroupPage() {
 
     const _session = useSession();
 
-    let refreshGroup = () => {
+    const refreshGroup = useCallback(() => {
         setLoading(true);
         apiHandler.get<GroupDto[]>(_session.token, "group").then(newGroups => {
             setGroups(newGroups);
             setLoading(false);
-        });
+        })},[_session]);
 
-    }
     useEffect(() => {
         refreshGroup();
-    }, []);
+    }, [refreshGroup]);
 
     let addGroup = (groupName: string) => {
         apiHandler.post({ "name": groupName }, _session.token, "group").then((newGroup) => {

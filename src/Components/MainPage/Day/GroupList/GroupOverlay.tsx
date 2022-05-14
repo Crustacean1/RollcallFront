@@ -99,7 +99,7 @@ function GroupOverlay({ targetId, date, active, exit }: GroupOverlayProps) {
                 })
         }
         return () => { isActive = false; }
-    }, [active])
+    }, [active, _session, date, targetId])
 
     const groupList = _attendanceSummary.groups.map(s => <GroupList key={`group-${s.groupName}`} date={date} summary={s} exit={() => { }} />);
     const overlay = <Overlay class="" target={

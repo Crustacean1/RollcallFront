@@ -28,7 +28,7 @@ function useAttendanceInfo(sourceDto: AttendanceDto,
         if (shouldUpdate) {
             setMealState(getStateFromDto(sourceDto));
         }
-    }, [sourceDto])
+    }, [sourceDto, _mealState])
 
 
     const updateMealArray = (update: ChildAttendanceDto): Promise<ChildAttendanceDto> => {

@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import {  useCallback } from 'react';
 
 import { Loading, Loader } from '../../../Common/Loading';
 import BasicTable from '../../../Common/Table';

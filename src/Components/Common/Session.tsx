@@ -9,7 +9,7 @@ interface LoginSession {
     endSession: () => void;
 }
 
-let LoginSession = createContext<LoginSession>(null!);
+const loginSession = createContext<LoginSession>(null!);
 
 function TokenManager({ children }: { children: React.ReactNode }) {
     const rollcallTokenName = "rollcall-token";
@@ -29,14 +29,14 @@ function TokenManager({ children }: { children: React.ReactNode }) {
     const endSession = () => { setToken(""); saveTokenToStorage(""); setValid(false); }
 
     return (
-        <LoginSession.Provider value={{ token, valid, startSession, invalidateSession, endSession }}>
+        <loginSession.Provider value={{ token, valid, startSession, invalidateSession, endSession }}>
             {children}
-        </LoginSession.Provider>
+        </loginSession.Provider>
     )
 }
 
 function useSession() {
-    return useContext(LoginSession);
+    return useContext(loginSession);
 }
 
 function AuthPage({ children }: { children: React.ReactNode }) {

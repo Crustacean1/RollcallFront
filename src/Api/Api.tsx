@@ -1,5 +1,3 @@
-import { AttendanceDto } from './ApiTypes';
-
 class Api {
     httpOk: number;
     httpCreated: number;

@@ -1,4 +1,4 @@
-import { AttendanceCountDto, MealDate, ChildAttendanceDto } from '../../../Api/ApiTypes';
+import { AttendanceCountDto, MealDate } from '../../../Api/ApiTypes';
 
 interface AttendanceRequestData {
     target: number;
